@@ -11,9 +11,17 @@ using namespace std;
 #define NUM_LEDS 240
 #define BRIGHTNESS 92
 #define MAX_BRIGHTNESS 255
+
 CRGB leds[NUM_LEDS];
 CRGB colorsUSA[] = {CRGB::Red, CRGB::White, CRGB::Blue, CRGB::Black};
+LiquidCrystal LCDriver(11, 9, 5, 6, 7, 8);
 List<CRGB> colors;
+
+typedef enum {CLEAN_UP = 0, RANDOM = 1, SINGLE_ZIPPER = 2, SHIFT_SINGLE_PIXEL = 3,
+              ONE_COLOR = 4, ONE_COLOR_STROBE = 5, MULTI_COLOR = 6, MULTI_COLOR_STROBE = 7,
+              SHIFT_MULTI_PIXEL = 8, THREE_ARRAY = 9, DIMMER = 10, DIM_IN_OUT = 11} ShowType;
+ShowType showType;
+int showTypeInt;
 
 void showProgramCleanUp(unsigned long durationTime);
 void showProgramRandom(int numIterations, unsigned long durationTime);
@@ -22,6 +30,7 @@ void showProgramShiftSinglePixel(CRGB crgb, unsigned long durationTime);
 void showProgramOneColor(CRGB crgb, unsigned long durationTime);
 void showProgramOneColorStrobe(CRGB crgb, long intervalTime, long durationTime);
 void showProgramMultiColor(long dTime, unsigned long durationTime);
+void showProgramMultiColorStrobe(unsigned long intervalTime, unsigned long durationTime);
 void showProgramShiftMultiPixel(unsigned long durationTime);
 void showProgramThreeArray(CRGB crgb1, CRGB crgb2, CRGB crgb3, unsigned long durationTime);
 void showProgramDimmer(CRGB crgb, int decay, unsigned long durationTime);
@@ -34,13 +43,18 @@ void setup() {
   pinMode(ONBOARD_LED_PIN, OUTPUT);
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip); // initializes LED strip
   FastLED.setBrightness(BRIGHTNESS);// global brightness
-  showProgramCleanUp(1000); // clean up
+  showProgramCleanUp(1); // clean up
   FastLED.show();
 
   for (int i = 0; i < 4; i++)
   {
     colors.Add(colorsUSA[i]);
   }
+
+  int (*functionPointer[])() = {showProgramCleanUp, showProgramCleanUp, showProgramRandom, showProgramSingleZipper, 
+                          showProgramShiftSinglePixel, showProgramOneColor, showProgramOneColorStrobe, 
+                          showProgramMultiColor, showProgramMultiColorStrobe, showProgramShiftMultiPixel, 
+                          showProgramThreeArray, showProgramDimmer, showProgramDimInOut};
 }
 
 void loop() {
