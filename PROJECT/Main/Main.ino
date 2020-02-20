@@ -14,6 +14,8 @@ using namespace std;
 
 CRGB leds[NUM_LEDS];
 CRGB colorsUSA[] = {CRGB::Red, CRGB::White, CRGB::Blue, CRGB::Black};
+CRGB colorsTest[] = {CRGB::Red, CRGB::Green, CRGB::Blue};
+CRGB colorsKSU[] = {0x512888, CRGB::Silver, CRGB::White};
 LiquidCrystal LCDriver(11, 9, 5, 6, 7, 8);
 List<CRGB> colors;
 
@@ -21,20 +23,24 @@ typedef enum {CLEAN_UP = 0, RANDOM = 1, SINGLE_ZIPPER = 2, SHIFT_SINGLE_PIXEL = 
               ONE_COLOR = 4, ONE_COLOR_STROBE = 5, MULTI_COLOR = 6, MULTI_COLOR_STROBE = 7,
               SHIFT_MULTI_PIXEL = 8, THREE_ARRAY = 9, DIMMER = 10, DIM_IN_OUT = 11} ShowType;
 ShowType showType;
-int showTypeInt;
 
-void showProgramCleanUp(unsigned long durationTime);
-void showProgramRandom(int numIterations, unsigned long durationTime);
-void showProgramSingleZipper(CRGB crgb, unsigned long durationTime);
-void showProgramShiftSinglePixel(CRGB crgb, unsigned long durationTime);
-void showProgramOneColor(CRGB crgb, unsigned long durationTime);
-void showProgramOneColorStrobe(CRGB crgb, long intervalTime, long durationTime);
-void showProgramMultiColor(long dTime, unsigned long durationTime);
-void showProgramMultiColorStrobe(unsigned long intervalTime, unsigned long durationTime);
-void showProgramShiftMultiPixel(unsigned long durationTime);
-void showProgramThreeArray(CRGB crgb1, CRGB crgb2, CRGB crgb3, unsigned long durationTime);
-void showProgramDimmer(CRGB crgb, int decay, unsigned long durationTime);
-void showProgramDimInOut(CRGB crgb, int decay, unsigned long durationTime);
+unsigned long durationTime;
+CRGB crgb;
+CRGB three_colors[] = {colorsTest[0], colorsTest[1], colorsTest[2]};
+unsigned long intervalTime;
+unsigned int decay;
+void showProgramCleanUp(unsigned long);
+void showProgramRandom(int , unsigned long );
+void showProgramSingleZipper(CRGB , unsigned long );
+void showProgramShiftSinglePixel(CRGB , unsigned long );
+void showProgramOneColor(CRGB , unsigned long );
+void showProgramOneColorStrobe(CRGB , unsigned long , unsigned long );
+void showProgramMultiColor(unsigned long , unsigned long );
+void showProgramMultiColorStrobe(unsigned long , unsigned long );
+void showProgramShiftMultiPixel(unsigned long );
+void showProgramThreeArray(CRGB , CRGB , CRGB , unsigned long );
+void showProgramDimmer(CRGB , unsigned int , unsigned long );
+void showProgramDimInOut(CRGB , unsigned int , unsigned long );
 
 
 void setup() {
@@ -44,23 +50,25 @@ void setup() {
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip); // initializes LED strip
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   showProgramCleanUp(1); // clean up
+  showType = CLEAN_UP;
   FastLED.show();
 
   for (int i = 0; i < 4; i++)
   {
     colors.Add(colorsUSA[i]);
   }
-
-  int (*functionPointer[])() = {showProgramCleanUp, showProgramCleanUp, showProgramRandom, showProgramSingleZipper, 
-                          showProgramShiftSinglePixel, showProgramOneColor, showProgramOneColorStrobe, 
-                          showProgramMultiColor, showProgramMultiColorStrobe, showProgramShiftMultiPixel, 
-                          showProgramThreeArray, showProgramDimmer, showProgramDimInOut};
 }
 
 void loop() {
-  
   testShowPrograms();
-  
+
+//  switch(showType)
+//  {
+//    case CLEAN_UP: 
+//      break;
+//    else: 
+//      break;
+//  }
 }
 
 
@@ -183,7 +191,7 @@ void showProgramOneColorStrobe(CRGB crgb, unsigned long intervalTime, unsigned l
 
 
 //Cycles through the list of colors
-void showProgramMultiColor(long dTime, unsigned long durationTime) {
+void showProgramMultiColor(unsigned long dTime, unsigned long durationTime) {
   for (unsigned int i = 0; i < colors.Count(); i++) {
     showProgramOneColor(colors[i], dTime);
   }
@@ -228,7 +236,7 @@ void showProgramThreeArray(CRGB crgb1, CRGB crgb2, CRGB crgb3, unsigned long dur
 }
 
 
-void showProgramDimmer(CRGB crgb, int decay, unsigned long durationTime) {
+void showProgramDimmer(CRGB crgb, unsigned int decay, unsigned long durationTime) {
   FastLED.setBrightness(BRIGHTNESS);
   for (int i = 0; i < NUM_LEDS; ++i) {
     leds[i] = crgb;
@@ -248,13 +256,13 @@ void showProgramDimmer(CRGB crgb, int decay, unsigned long durationTime) {
 }
 
 
-void showProgramDimInOut(CRGB crgb, int decay, unsigned long durationTime) {
+void showProgramDimInOut(CRGB crgb, unsigned int decay, unsigned long durationTime) {
   FastLED.setBrightness(BRIGHTNESS);
   for (int i = 0; i < NUM_LEDS; ++i) {
     leds[i] = crgb;
   }
   FastLED.show();
-  int curBright = BRIGHTNESS;
+  unsigned int curBright = BRIGHTNESS;
   
   while (curBright > 0) {
     curBright -=decay;
