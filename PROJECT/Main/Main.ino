@@ -62,13 +62,37 @@ void setup() {
 void loop() {
   testShowPrograms();
 
-//  switch(showType)
-//  {
-//    case CLEAN_UP: 
+  switch(showType)
+  {
+    case CLEAN_UP: 
+      showProgramCleanUp(1);
+      break;
+    case RANDOM: 
+      showProgramRandom(100, 100);
+      break;
+    case SINGLE_ZIPPER: 
+      break;
+    case SHIFT_SINGLE_PIXEL: 
+      break;
+    case ONE_COLOR: 
+      break;
+    case ONE_COLOR_STROBE: 
+      break;
+    case MULTI_COLOR: 
+      break;
+    case MULTI_COLOR_STROBE: 
+      break;
+    case SHIFT_MULTI_PIXEL: 
+      break;
+    case THREE_ARRAY: 
+      break;
+    case DIMMER: 
+      break;
+    case DIM_IN_OUT: 
+      break;
+//    default: 
 //      break;
-//    else: 
-//      break;
-//  }
+  }
 }
 
 
