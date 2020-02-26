@@ -29,6 +29,7 @@ CRGB crgb;
 CRGB three_colors[] = {colorsTest[0], colorsTest[1], colorsTest[2]};
 unsigned long intervalTime;
 unsigned int decay;
+void testShowPrograms();
 void showProgramCleanUp(unsigned long);
 void showProgramRandom(int , unsigned long );
 void showProgramSingleZipper(CRGB , unsigned long );
@@ -53,46 +54,46 @@ void setup() {
   showType = CLEAN_UP;
   FastLED.show();
 
-  for (int i = 0; i < 4; i++)
+  for (unsigned int i = 0; i < (sizeof(colorsKSU) / sizeof(CRGB)); i++)
   {
-    colors.Add(colorsUSA[i]);
+    colors.Add(colorsKSU[i]);
   }
 }
 
 void loop() {
   testShowPrograms();
-
-  switch(showType)
-  {
-    case CLEAN_UP: 
-      showProgramCleanUp(1);
-      break;
-    case RANDOM: 
-      showProgramRandom(100, 100);
-      break;
-    case SINGLE_ZIPPER: 
-      break;
-    case SHIFT_SINGLE_PIXEL: 
-      break;
-    case ONE_COLOR: 
-      break;
-    case ONE_COLOR_STROBE: 
-      break;
-    case MULTI_COLOR: 
-      break;
-    case MULTI_COLOR_STROBE: 
-      break;
-    case SHIFT_MULTI_PIXEL: 
-      break;
-    case THREE_ARRAY: 
-      break;
-    case DIMMER: 
-      break;
-    case DIM_IN_OUT: 
-      break;
+//
+//  switch(showType)
+//  {
+//    case CLEAN_UP: 
+//      showProgramCleanUp(1);
+//      break;
+//    case RANDOM: 
+//      showProgramRandom(100, 100);
+//      break;
+//    case SINGLE_ZIPPER: 
+//      break;
+//    case SHIFT_SINGLE_PIXEL: 
+//      break;
+//    case ONE_COLOR: 
+//      break;
+//    case ONE_COLOR_STROBE: 
+//      break;
+//    case MULTI_COLOR: 
+//      break;
+//    case MULTI_COLOR_STROBE: 
+//      break;
+//    case SHIFT_MULTI_PIXEL: 
+//      break;
+//    case THREE_ARRAY: 
+//      break;
+//    case DIMMER: 
+//      break;
+//    case DIM_IN_OUT: 
+//      break;
 //    default: 
 //      break;
-  }
+//  }
 }
 
 
@@ -113,7 +114,7 @@ void testShowPrograms()
 //    showProgramRandom(100, 100); // show "random" program
 //  
 //    showProgramCleanUp(1000); // clean up
-//    showProgramRandom(10, 10); // show "random" program
+//    showProgramRandom(100, 66); // show "random" program
 //  
 //    showProgramCleanUp(1); // clean up
 //    showProgramSingleZipper(CRGB::Purple, 10); // show "zipper" program
@@ -128,10 +129,10 @@ void testShowPrograms()
 //    showProgramOneColorStrobe(CRGB::Purple, 66, 7000);
 //
 //    showProgramCleanUp(1000);
-//    showProgramMultiColorStrobe(100, 10000);
+//    showProgramMultiColorStrobe(100, 10000); // MAY HAVE SOME PROBLEMS STILL
 //      
 //    showProgramCleanUp(100);
-//    showProgramMultiColor(1000, 1);  //show "multi color" program
+//    showProgramMultiColor(1000, 1);   // MAY HAVE SOME PROBLEMS STILL //show "multi color" program
 //  
 //    showProgramCleanUp(2500); // clean up
 //    showProgramShiftSinglePixel(CRGB::Red, 100); // show "shift single pixel program" with red pixel
