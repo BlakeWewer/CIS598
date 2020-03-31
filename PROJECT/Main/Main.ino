@@ -5,24 +5,38 @@
 using namespace std;
 
 #define ONBOARD_LED_PIN 13
-#define DATA_PIN 3
+#define DATA_PIN 6
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
 #define NUM_LEDS 240
-#define BRIGHTNESS 92
-#define MAX_BRIGHTNESS 255
+#define BRIGHTNESS 75
+#define MIN_BRIGHTNESS 5
+#define MAX_BRIGHTNESS 200
 
 CRGB leds[NUM_LEDS];
 CRGB colorsUSA[] = {CRGB::Red, CRGB::White, CRGB::Blue, CRGB::Black};
 CRGB colorsTest[] = {CRGB::Red, CRGB::Green, CRGB::Blue};
 CRGB colorsKSU[] = {0x512888, CRGB::Silver, CRGB::White};
-LiquidCrystal LCDriver(11, 9, 5, 6, 7, 8);
 List<CRGB> colors;
+const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
+unsigned int sample;
+#define MIC_PIN A0
+#define MIC_RATIO 65.3846154    //Brightness = 65.3846154*Reading     //Reading = 0.01529412*Brightness
+
+#define POT_PIN A1
+#define POT_RATIO 0.24926686    //Brightness = 0.24926686*Reading     //Reading = 4.01176471*Brightness
 
 typedef enum {CLEAN_UP = 0, RANDOM = 1, SINGLE_ZIPPER = 2, SHIFT_SINGLE_PIXEL = 3,
               ONE_COLOR = 4, ONE_COLOR_STROBE = 5, MULTI_COLOR = 6, MULTI_COLOR_STROBE = 7,
-              SHIFT_MULTI_PIXEL = 8, THREE_ARRAY = 9, DIMMER = 10, DIM_IN_OUT = 11} ShowType;
+              SHIFT_MULTI_PIXEL = 8, THREE_ARRAY = 9, DIMMER = 10, DIM_IN_OUT = 11, POT_ONE = 12} ShowType;
 ShowType showType;
+
+LiquidCrystal LCD(12, 11, 5, 4, 3, 2);
+#define LCD_BACKLIGHT_PIN A5
+unsigned long menuTimer;
+
+#define BUTTON_PIN A2
+int buttonValue = 0;
 
 unsigned long durationTime;
 CRGB crgb;
@@ -42,6 +56,8 @@ void showProgramShiftMultiPixel(unsigned long );
 void showProgramThreeArray(CRGB , CRGB , CRGB , unsigned long );
 void showProgramDimmer(CRGB , unsigned int , unsigned long );
 void showProgramDimInOut(CRGB , unsigned int , unsigned long );
+void showProgramPotentiometerOne(CRGB , unsigned long );
+void showProgramMicrophoneOne(CRGB, unsigned long);
 
 
 void setup() {
@@ -58,42 +74,82 @@ void setup() {
   {
     colors.Add(colorsKSU[i]);
   }
+
+  LCD.begin(16, 2);
+  LCD.clear();
+  LCD.setCursor(0,0);
+  LCD.print("HELLO USER");
+  menuTimer = millis();
+  pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
+  analogWrite(LCD_BACKLIGHT_PIN, HIGH);
 }
 
 void loop() {
   testShowPrograms();
-//
-//  switch(showType)
-//  {
-//    case CLEAN_UP: 
-//      showProgramCleanUp(1);
-//      break;
-//    case RANDOM: 
-//      showProgramRandom(100, 100);
-//      break;
-//    case SINGLE_ZIPPER: 
-//      break;
-//    case SHIFT_SINGLE_PIXEL: 
-//      break;
-//    case ONE_COLOR: 
-//      break;
-//    case ONE_COLOR_STROBE: 
-//      break;
-//    case MULTI_COLOR: 
-//      break;
-//    case MULTI_COLOR_STROBE: 
-//      break;
-//    case SHIFT_MULTI_PIXEL: 
-//      break;
-//    case THREE_ARRAY: 
-//      break;
-//    case DIMMER: 
-//      break;
-//    case DIM_IN_OUT: 
-//      break;
-//    default: 
-//      break;
-//  }
+//  onlyLEDModes();
+  manageButtons();
+//  manageMenu();
+}
+
+
+void manageMenu()
+{
+  if(millis() - menuTimer > 100)
+  {
+    LCD.clear();
+    LCD.setCursor(0, 0);
+    LCD.print("HELLO USER");
+    LCD.setCursor(0, 1);
+    LCD.print("TEST");
+    menuTimer+=100;
+  }  
+}
+
+void manageButtons()
+{
+  buttonValue = analogRead(BUTTON_PIN);
+
+  Serial.println(buttonValue);               //Display the read value in the Serial monitor
+  if (buttonValue < 100)                     //Lower limit for first button - if below this limit then no button is pushed and LEDs are turned off
+  {
+    LCD.clear();
+    LCD.setCursor(0,0);
+    LCD.print("No Button");
+    LCD.setCursor(0, 1);
+    LCD.print(buttonValue);
+  }
+  else if (buttonValue < 200)                //First button limit
+  {
+    LCD.clear();
+    LCD.setCursor(0,0);
+    LCD.print("Button 1");
+    LCD.setCursor(0, 1);
+    LCD.print(buttonValue);
+  }
+  else if (buttonValue < 350)                //Second button limit
+  {
+    LCD.clear();
+    LCD.setCursor(0,0);
+    LCD.print("Button 2");
+    LCD.setCursor(0, 1);
+    LCD.print(buttonValue);
+  }
+  else if (buttonValue < 750)                //Third button limit
+  {
+    LCD.clear();
+    LCD.setCursor(0,0);
+    LCD.print("Button 3");
+    LCD.setCursor(0, 1);
+    LCD.print(buttonValue);
+  }
+  else                                       //Fourth button limit
+  {
+    LCD.clear();
+    LCD.setCursor(0,0);
+    LCD.print("Button 4");
+    LCD.setCursor(0, 1);
+    LCD.print(buttonValue);
+  }
 }
 
 
@@ -106,6 +162,55 @@ void showProgramCleanUp(unsigned long durationTime) {
   digitalWrite(13, HIGH); // sets the digital pin 13 on
   delay(durationTime);            // waits for a second
   digitalWrite(13, LOW);  // sets the digital pin 13 off
+}
+
+void onlyLEDModes()
+{
+  switch(showType)
+  {
+    case CLEAN_UP: 
+      showProgramCleanUp(1);
+      break;
+    case RANDOM: 
+      showProgramRandom(100, 100);
+      break;
+    case SINGLE_ZIPPER: 
+      showProgramSingleZipper(CRGB::Purple, 10);
+      break;
+    case SHIFT_SINGLE_PIXEL: 
+      showProgramShiftSinglePixel(CRGB::Blue, 100);
+      break;
+    case ONE_COLOR: 
+      showProgramOneColor(CRGB::Purple, 50);
+      break;
+    case ONE_COLOR_STROBE: 
+      showProgramOneColorStrobe(CRGB::Purple, 66, 7000);
+      break;
+    case MULTI_COLOR: 
+      showProgramMultiColor(1000, 1);
+      break;
+    case MULTI_COLOR_STROBE: 
+      showProgramMultiColorStrobe(100, 10000);
+      break;
+    case SHIFT_MULTI_PIXEL: 
+      showProgramShiftMultiPixel(25);
+      break;
+    case THREE_ARRAY: 
+      showProgramThreeArray(CRGB::Blue, CRGB::Red, CRGB::Green, 1000);
+      break;
+    case DIMMER: 
+      showProgramDimmer(CRGB::Purple, 1, 5);
+      break;
+    case DIM_IN_OUT: 
+      showProgramDimInOut(CRGB::Purple, 1, 5);
+      break;
+    case POT_ONE:
+      showProgramPotentiometerOne(CRGB::Purple, 10000);
+      break;
+    default: 
+      showProgramCleanUp(100); // clean up
+      break;
+  }
 }
 
 void testShowPrograms()
@@ -126,7 +231,7 @@ void testShowPrograms()
 //    showProgramOneColor(CRGB::Purple, 50);  // show "one color" program
 //  
 //    showProgramCleanUp(1000);
-//    showProgramOneColorStrobe(CRGB::Purple, 66, 7000);
+//    showProgramOneColorStrobe(CRGB::Purple, 66, 7000); // show "one color strobe" program
 //
 //    showProgramCleanUp(1000);
 //    showProgramMultiColorStrobe(100, 10000); // MAY HAVE SOME PROBLEMS STILL
@@ -150,6 +255,12 @@ void testShowPrograms()
 //    showProgramDimmer(CRGB::Purple, 1, 5);  //show "dimmer" program
 //
 //    showProgramDimInOut(CRGB::Purple, 1, 5);  //show "dim in/out" program
+//
+    showProgramCleanUp(100);
+    showProgramMicrophoneOne(CRGB::Purple, 1000);  // show "microphone one color" program
+//
+//    showProgramCleanUp(100);
+//    showProgramPotentiometerOne(CRGB::Purple, 1000);
 }
 
 
@@ -307,5 +418,76 @@ void showProgramDimInOut(CRGB crgb, unsigned int decay, unsigned long durationTi
     }
     FastLED.show();
     delay(durationTime);
+  }
+}
+
+void showProgramMicrophoneOne(CRGB crgb, unsigned long duration) {
+  unsigned long Timer;
+  double value = MIN_BRIGHTNESS;
+  unsigned int signalMax = 0;
+  unsigned int signalMin = 1024;
+  unsigned long startMillis;
+  unsigned int peakToPeak = 0;
+  double volts;
+  
+  for (int i = 0; i < NUM_LEDS; ++i) { 
+    leds[i] = crgb;
+  }
+
+  Timer = millis();
+  
+  while (millis() - Timer < duration) {
+    if(value < MIN_BRIGHTNESS)
+      value = MIN_BRIGHTNESS;
+    if(value > MAX_BRIGHTNESS)
+      value = MAX_BRIGHTNESS;
+    
+//    Serial.print("    ");
+//    Serial.println(value);
+    FastLED.setBrightness(value);
+    FastLED.show();
+    
+    startMillis = millis(); // Start of sample window
+    signalMax = 0;
+    signalMin = 1023;
+    while (millis() - startMillis < sampleWindow)
+    {
+      sample = analogRead(MIC_PIN);      
+        if (sample > signalMax)
+        {
+          signalMax = sample; // save just the max levels
+        }
+        else if (sample < signalMin)
+        {
+          signalMin = sample; // save just the min levels
+        }
+    }
+    peakToPeak = signalMax - signalMin; // max - min = peak-peak amplitude
+    volts = (peakToPeak * 3.3) / 1024; // convert to volts
+//    Serial.print(volts);
+//    Serial.print("    ");
+//    Serial.print(signalMin);
+//    Serial.print("    ");
+//    Serial.println(signalMax);
+//
+    value = (int)(volts * MIC_RATIO);
+  }
+}
+
+void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
+  unsigned long Timer;
+  double value = analogRead(POT_PIN);
+  value = (int)(value*POT_RATIO); 
+  if(value < MIN_BRIGHTNESS) value = MIN_BRIGHTNESS;
+  if(value > MAX_BRIGHTNESS) value = MAX_BRIGHTNESS; 
+  for (int i = 0; i < NUM_LEDS; ++i) {
+    leds[i] = crgb;
+  }
+  Timer = millis();
+  while(millis() - Timer < duration) {
+    FastLED.setBrightness(value);
+    FastLED.show();
+    value = (int)(analogRead(POT_PIN)*POT_RATIO);
+    Serial.println(value);
   }
 }

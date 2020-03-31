@@ -28,7 +28,6 @@ void setup() {
   {
     colors.add(colorsUSA[i]);
   }
-
 }
 
 
@@ -270,4 +269,3 @@ void loop() {
   //
   //    showProgramMicrophoneOne(CRGB::Red, 10000);
 }
-
