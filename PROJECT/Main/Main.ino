@@ -234,10 +234,10 @@ void testShowPrograms()
 //    showProgramOneColorStrobe(CRGB::Purple, 66, 7000); // show "one color strobe" program
 //
 //    showProgramCleanUp(1000);
-//    showProgramMultiColorStrobe(100, 10000); // MAY HAVE SOME PROBLEMS STILL
+    showProgramMultiColorStrobe(50, 10000); // show "multi color strobe" program
 //      
 //    showProgramCleanUp(100);
-//    showProgramMultiColor(1000, 1);   // MAY HAVE SOME PROBLEMS STILL //show "multi color" program
+//    showProgramMultiColor(1000, 1);   //show "multi color" program
 //  
 //    showProgramCleanUp(2500); // clean up
 //    showProgramShiftSinglePixel(CRGB::Red, 100); // show "shift single pixel program" with red pixel
@@ -256,8 +256,8 @@ void testShowPrograms()
 //
 //    showProgramDimInOut(CRGB::Purple, 1, 5);  //show "dim in/out" program
 //
-    showProgramCleanUp(100);
-    showProgramMicrophoneOne(CRGB::Purple, 1000);  // show "microphone one color" program
+//    showProgramCleanUp(100);
+//    showProgramMicrophoneOne(CRGB::Purple, 1000);  // show "microphone one color" program
 //
 //    showProgramCleanUp(100);
 //    showProgramPotentiometerOne(CRGB::Purple, 1000);
