@@ -544,7 +544,8 @@ void showProgramMultiColorStrobe(unsigned long intervalTime, unsigned long durat
   {
     showProgramOneColor(colorsTest[i], intervalTime);
     showProgramCleanUp(intervalTime);
-    i = (i + 1) % num_colors;
+    i++;
+    i %= num_colors;
   }
 }
 
