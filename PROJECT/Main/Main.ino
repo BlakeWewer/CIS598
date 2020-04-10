@@ -21,7 +21,6 @@ int MAX_BRIGHTNESS = 200;
 #define BUTTON_3 9
 #define BUTTON_4 10
 #define NUM_BUTTONS 4
-// I want to switch the pins for Buttons 1 and 2 to D2 and D3 in order to enable interrupts
 
 typedef enum {Idle = 0, Wait = 1, High = 2} ButtonState;
 
@@ -218,34 +217,34 @@ void LCDClearAndPrintTwoLines(String line1, String line2)
 
 void manageButtons()
 {
-  for(int i = 0; i < NUM_BUTTONS; i++)
+  for (int i = 0; i < NUM_BUTTONS; i++)
   {
     buttons[i].PrevValue = buttons[i].Value;
     buttons[i].Value = digitalRead(buttons[i].Pin);
   }
 
-  if(buttons[0].Value)
+  if (buttons[0].Value)
   {
-     if(validButtonPress(buttons[0]))  buttons[0].Active = true;
-     else buttons[0].Active = false;
+    if (validButtonPress(buttons[0]))  buttons[0].Active = true;
+    else buttons[0].Active = false;
   }
   else if (buttons[1].Value)
   {
     buttons[0].Active = false;
-    if(validButtonPress(buttons[1])) buttons[1].Active = true;
+    if (validButtonPress(buttons[1])) buttons[1].Active = true;
     else buttons[1].Active = false;
   }
-  else if(buttons[2].Value)
+  else if (buttons[2].Value)
   {
     buttons[0].Active = false;
     buttons[1].Active = false;
-    if(validButtonPress(buttons[2]))
+    if (validButtonPress(buttons[2]))
     {
       buttons[2].Active = true;
-      if(buttons[3].Value)
+      if (buttons[3].Value)
       {
-          if(validButtonPress(buttons[3])) buttons[3].Active = true;
-          else buttons[3].Active = false;
+        if (validButtonPress(buttons[3])) buttons[3].Active = true;
+        else buttons[3].Active = false;
       }
     }
     else
@@ -253,15 +252,15 @@ void manageButtons()
       buttons[2].Active = false;
     }
   }
-  else if(buttons[3].Value)
+  else if (buttons[3].Value)
   {
     buttons[0].Active = false;
     buttons[1].Active = false;
     buttons[2].Active = false;
-    if(validButtonPress(buttons[3])) buttons[3].Active = true;
+    if (validButtonPress(buttons[3])) buttons[3].Active = true;
     else buttons[3].Active = false;
   }
-  else{
+  else {
     buttons[0].Active = false;
     buttons[1].Active = false;
     buttons[2].Active = false;
@@ -271,7 +270,7 @@ void manageButtons()
 
 int validButtonPress(Button button)
 {
-  if(button.Value && !button.PrevValue) return 1;
+  if (button.Value && !button.PrevValue) return 1;
   else return 0;
 }
 
@@ -568,7 +567,7 @@ void showProgramOneColorStrobe(CRGB crgb, unsigned long intervalTime, unsigned l
 //Cycles through the list of colors
 void showProgramMultiColor(unsigned long dTime, unsigned long durationTime) {
   for (unsigned int i = 0; i < colors.Count(); i++) {
-    showProgramOneColor(colors[i], dTime);
+    showProgramOneColor(colorsTest[i], dTime);
   }
   delay(durationTime);
 }
@@ -579,7 +578,7 @@ void showProgramMultiColorStrobe(unsigned long intervalTime, unsigned long durat
   int i = 0;
   while (millis() - timer < durationTime)
   {
-    showProgramOneColor(colors[i], intervalTime);
+    showProgramOneColor(colorsTest[i], intervalTime);
     i = (i + 1) % colors.Count();
   }
 }
