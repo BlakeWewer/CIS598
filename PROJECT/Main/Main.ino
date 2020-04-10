@@ -43,7 +43,7 @@ CRGB leds[NUM_LEDS];
 CRGB colorsUSA[] = {CRGB::Red, CRGB::White, CRGB::Blue, CRGB::Black};
 CRGB colorsTest[] = {CRGB::Red, CRGB::Green, CRGB::Blue};
 CRGB colorsKSU[] = {0x512888, CRGB::Silver, CRGB::White};
-int num_colors;
+unsigned int num_colors;
 
 List<CRGB> colors;
 typedef struct {
@@ -132,6 +132,7 @@ void setup() {
   pinMode(ONBOARD_LED_PIN, OUTPUT);
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip); // initializes LED strip
   FastLED.setBrightness(BRIGHTNESS);// global brightness
+  num_colors = 3;
   showProgramCleanUp(1); // clean up
   showType = CLEAN_UP;
   FastLED.show();
@@ -143,6 +144,9 @@ void setup() {
   pinMode(BUTTON_4, INPUT);
   pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
   analogWrite(LCD_BACKLIGHT_PIN, HIGH);
+
+//  attachInterrupt(digitalPinToInterrupt(BUTTON_1), interruptButtonMenu, RISING);
+//  attachInterrupt(digitalPinToInterrupt(BUTTON_2), interruptButtonMenu, RISING);
 }
 
 void loop() {
@@ -153,6 +157,10 @@ void loop() {
   //  testShowPrograms();
 }
 
+void interruptButtonMenu()
+{
+  buttons[0].Active = !buttons[0].Active;
+}
 
 void manageMenu()
 {
@@ -276,7 +284,8 @@ int validButtonPress(Button button)
 
 void incrementShowType()
 {
-  FastLED.setBrightness(DEFAULT_BRIGHTNESS);
+  BRIGHTNESS = DEFAULT_BRIGHTNESS;
+  FastLED.setBrightness(BRIGHTNESS);
   showProgramCleanUp(1);
   switch (showType)
   {
@@ -334,53 +343,6 @@ void incrementShowType()
   }
 }
 
-//void manageButtonsAnalog()
-//{
-//  buttonValue = analogRead(BUTTON_PIN);
-//
-//  Serial.println(buttonValue);               //Display the read value in the Serial monitor
-//  if (buttonValue < 100)                     //Lower limit for first button - if below this limit then no button is pushed and LEDs are turned off
-//  {
-//    LCD.clear();
-//    LCD.setCursor(0, 0);
-//    LCD.print("No Button");
-//    LCD.setCursor(0, 1);
-//    LCD.print(buttonValue);
-//  }
-//  else if (buttonValue < 325)                //First button limit
-//  {
-//    LCD.clear();
-//    LCD.setCursor(0, 0);
-//    LCD.print("Button 1");
-//    LCD.setCursor(0, 1);
-//    LCD.print(buttonValue);
-//  }
-//  else if (buttonValue < 450)                //Second button limit
-//  {
-//    LCD.clear();
-//    LCD.setCursor(0, 0);
-//    LCD.print("Button 2");
-//    LCD.setCursor(0, 1);
-//    LCD.print(buttonValue);
-//  }
-//  else if (buttonValue < 900)                //Third button limit
-//  {
-//    LCD.clear();
-//    LCD.setCursor(0, 0);
-//    LCD.print("Button 3");
-//    LCD.setCursor(0, 1);
-//    LCD.print(buttonValue);
-//  }
-//  else                                       //Fourth button limit
-//  {
-//    LCD.clear();
-//    LCD.setCursor(0, 0);
-//    LCD.print("Button 4");
-//    LCD.setCursor(0, 1);
-//    LCD.print(buttonValue);
-//  }
-//}
-
 
 // switches off all LEDs
 void showProgramCleanUp(unsigned long durationTime) {
@@ -401,28 +363,28 @@ void onlyLEDModes()
       showProgramCleanUp(1);
       break;
     case RANDOM:
-      showProgramRandom(100, 1);
+      showProgramRandom(1, 1);
       break;
     case SINGLE_ZIPPER:
       showProgramSingleZipper(CRGB::Purple, 1);
       break;
     case SHIFT_SINGLE_PIXEL:
-      showProgramShiftSinglePixel(CRGB::Blue, 1);
+      showProgramShiftSinglePixel(CRGB::White, 1);
       break;
     case ONE_COLOR:
       showProgramOneColor(CRGB::Purple, 1);
       break;
     case ONE_COLOR_STROBE:
-      showProgramOneColorStrobe(CRGB::Purple, 1, 1);
+      showProgramOneColorStrobe(CRGB::Purple, 10, 100);
       break;
     case MULTI_COLOR:
-      showProgramMultiColor(1, 1);
+      showProgramMultiColor(90, 90);
       break;
     case MULTI_COLOR_STROBE:
-      showProgramMultiColorStrobe(1, 1);
+      showProgramMultiColorStrobe(20, 100);
       break;
     case SHIFT_MULTI_PIXEL:
-      showProgramShiftMultiPixel(1);
+      showProgramShiftMultiPixel(20);
       break;
     case THREE_ARRAY:
       showProgramThreeArray(CRGB::Blue, CRGB::Red, CRGB::Green, 1);
@@ -437,13 +399,14 @@ void onlyLEDModes()
       showProgramPotentiometerOne(CRGB::Purple, 1);
       break;
     case MIC_ONE:
-      showProgramMicrophoneOne(CRGB::Purple, 1);
+      showProgramMicrophoneOne(CRGB::Purple, 5000);
       break;
     case MIC_MULTI:
       //      showProgramMicrophoneOne(CRGB::Purple, 10000);    Still need to implement function
+      showProgramCleanUp(20);
       break;
     case CYCLE_COLORS:
-      //      cycleCRGB();
+      cycleCRGB();
       break;
     default:
       showProgramCleanUp(100); // clean up
@@ -453,53 +416,54 @@ void onlyLEDModes()
 
 void testShowPrograms()
 {
-  //    showProgramCleanUp(100); // clean up
-  //    showProgramRandom(100, 100); // show "random" program
-  //
-  //    showProgramCleanUp(1000); // clean up
-  //    showProgramRandom(100, 66); // show "random" program
-  //
-  //    showProgramCleanUp(1); // clean up
-  //    showProgramSingleZipper(CRGB::Purple, 10); // show "zipper" program
-  //
-  //    showProgramCleanUp(2500); // clean up
-  //    showProgramShiftSinglePixel(CRGB::Blue, 100); // show "shift single pixel program" with blue pixel
-  //
-  //    showProgramCleanUp(100);
-  //    showProgramOneColor(CRGB::Purple, 50);  // show "one color" program
-  //
-  //    showProgramCleanUp(1000);
-  //    showProgramOneColorStrobe(CRGB::Purple, 66, 7000); // show "one color strobe" program
-  //
-  //    showProgramCleanUp(1000);
-  //    showProgramMultiColorStrobe(50, 10000); // show "multi color strobe" program
-  //
-  //    showProgramCleanUp(100);
-  //    showProgramMultiColor(1000, 1);   //show "multi color" program
-  //
-  //    showProgramCleanUp(2500); // clean up
-  //    showProgramShiftSinglePixel(CRGB::Red, 100); // show "shift single pixel program" with red pixel
-  //
-  //    showProgramCleanUp(2500); // clean up
-  //    showProgramShiftMultiPixel(100); // show "shift multi pixel" program
-  //
-  //    showProgramCleanUp(2500); // clean up
-  //    showProgramShiftMultiPixel(25); // show "shift multi pixel" program
-  //
-  //    showProgramCleanUp(100);
-  //    showProgramThreeArray(CRGB::Blue, CRGB::Red, CRGB::Green, 1000); //show "RGB" program
-  //
-  //    showProgramCleanUp(100);
-  //    showProgramDimmer(CRGB::Purple, 1, 5);  //show "dimmer" program
-  //
-  //    showProgramDimInOut(CRGB::Purple, 1, 5);  //show "dim in/out" program
-  //
-  //    showProgramCleanUp(100);
-  //    showProgramMicrophoneOne(CRGB::Purple, 1000);  // show "microphone one color" program
-  //
-  //    showProgramCleanUp(100);
-  //    showProgramPotentiometerOne(CRGB::Purple, 1000);
+      showProgramCleanUp(100); // clean up
+      showProgramRandom(100, 100); // show "random" program
+  
+      showProgramCleanUp(1000); // clean up
+      showProgramRandom(100, 66); // show "random" program
+  
+      showProgramCleanUp(1); // clean up
+      showProgramSingleZipper(CRGB::Purple, 10); // show "zipper" program
+  
+      showProgramCleanUp(2500); // clean up
+      showProgramShiftSinglePixel(CRGB::Blue, 100); // show "shift single pixel program" with blue pixel
+  
+      showProgramCleanUp(100);
+      showProgramOneColor(CRGB::Purple, 50);  // show "one color" program
+  
+      showProgramCleanUp(1000);
+      showProgramOneColorStrobe(CRGB::Purple, 66, 7000); // show "one color strobe" program
+  
+      showProgramCleanUp(1000);
+      showProgramMultiColorStrobe(50, 10000); // show "multi color strobe" program
+  
+      showProgramCleanUp(100);
+      showProgramMultiColor(1000, 1);   //show "multi color" program
+  
+      showProgramCleanUp(2500); // clean up
+      showProgramShiftSinglePixel(CRGB::Red, 100); // show "shift single pixel program" with red pixel
+  
+      showProgramCleanUp(2500); // clean up
+      showProgramShiftMultiPixel(100); // show "shift multi pixel" program
+  
+      showProgramCleanUp(2500); // clean up
+      showProgramShiftMultiPixel(25); // show "shift multi pixel" program
+  
+      showProgramCleanUp(100);
+      showProgramThreeArray(CRGB::Blue, CRGB::Red, CRGB::Green, 1000); //show "RGB" program
+  
+      showProgramCleanUp(100);
+      showProgramDimmer(CRGB::Purple, 1, 5);  //show "dimmer" program
+  
+      showProgramDimInOut(CRGB::Purple, 1, 5);  //show "dim in/out" program
+  
+      showProgramCleanUp(100);
+      showProgramMicrophoneOne(CRGB::Purple, 1000);  // show "microphone one color" program
+  
+      showProgramCleanUp(100);
+      showProgramPotentiometerOne(CRGB::Purple, 1000);
 }
+
 
 
 // switches on all LEDs. Each LED is shown in random color.
@@ -566,7 +530,7 @@ void showProgramOneColorStrobe(CRGB crgb, unsigned long intervalTime, unsigned l
 
 //Cycles through the list of colors
 void showProgramMultiColor(unsigned long dTime, unsigned long durationTime) {
-  for (unsigned int i = 0; i < colors.Count(); i++) {
+  for (unsigned int i = 0; i < num_colors; i++) {
     showProgramOneColor(colorsTest[i], dTime);
   }
   delay(durationTime);
@@ -579,7 +543,8 @@ void showProgramMultiColorStrobe(unsigned long intervalTime, unsigned long durat
   while (millis() - timer < durationTime)
   {
     showProgramOneColor(colorsTest[i], intervalTime);
-    i = (i + 1) % colors.Count();
+    showProgramCleanUp(intervalTime);
+    i = (i + 1) % num_colors;
   }
 }
 
@@ -587,6 +552,7 @@ void showProgramMultiColorStrobe(unsigned long intervalTime, unsigned long durat
 // Shifts multiple pixel from the start of strip to the end. The color of each pixel is randomized.
 // durationTime: indicates how long the pixels are shown on each LED
 void showProgramShiftMultiPixel(unsigned long durationTime) {
+  showProgramCleanUp(1);
   for (int i = 0; i < NUM_LEDS; ++i) {
     for (int j = i; j > 0; --j) {
       leds[j] = leds[j - 1];
@@ -618,7 +584,7 @@ void showProgramDimmer(CRGB crgb, unsigned int decay, unsigned long durationTime
   FastLED.show();
   int curBright = BRIGHTNESS;
 
-  while (curBright > 0) {
+  while (curBright > MIN_BRIGHTNESS) {
     curBright -= decay;
     FastLED.setBrightness(curBright);
     for (int i = 0; i < NUM_LEDS; ++i) {
@@ -638,7 +604,7 @@ void showProgramDimInOut(CRGB crgb, unsigned int decay, unsigned long durationTi
   FastLED.show();
   unsigned int curBright = BRIGHTNESS;
 
-  while (curBright > 0) {
+  while (curBright > MIN_BRIGHTNESS) {
     curBright -= decay;
     FastLED.setBrightness(curBright);
     for (int i = 0; i < NUM_LEDS; ++i) {
@@ -648,8 +614,18 @@ void showProgramDimInOut(CRGB crgb, unsigned int decay, unsigned long durationTi
     delay(durationTime);
   }
 
-  while (curBright < 255 - decay) {
+  while (curBright < MAX_BRIGHTNESS - decay) {
     curBright += decay;
+    FastLED.setBrightness(curBright);
+    for (int i = 0; i < NUM_LEDS; ++i) {
+      leds[i] = crgb;
+    }
+    FastLED.show();
+    delay(durationTime);
+  }
+
+  while (curBright > BRIGHTNESS) {
+    curBright -= decay;
     FastLED.setBrightness(curBright);
     for (int i = 0; i < NUM_LEDS; ++i) {
       leds[i] = crgb;
@@ -754,22 +730,20 @@ void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
   }
 }
 
-//void cycleCRGB()
-//{
-//  for(CRGB i : BasicColors)
-//  {
-//    for(int j = 0; j < NUM_LEDS; j++)
-//    {
-//      leds[j] = i;
-//    }
-//    FastLED.show();
-//    unsigned long Timer = millis();
-//    LCD.clear();
-//    LCD.setCursor(0, 0);
-//    LCD.print(BasicColorsNames[i]);
-//    while(millis() - Timer < 100)
-//    {
-//
-//    }
-//  }
-//}
+void cycleCRGB()
+{
+  for(Color i : BasicColors)
+  {
+    for(int j = 0; j < NUM_LEDS; j++)
+    {
+      leds[j] = i.Value;
+    }
+    BRIGHTNESS = DEFAULT_BRIGHTNESS;
+    FastLED.show(BRIGHTNESS);
+    FastLED.show();
+    LCD.clear();
+    LCD.setCursor(0, 0);
+    LCD.print(i.Name);
+    delay(500);
+  }
+}
