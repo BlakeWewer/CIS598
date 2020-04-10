@@ -9,15 +9,15 @@ using namespace std;
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
 #define NUM_LEDS 240
-#define DEFAULT_BRIGHTNESS 92
-byte BRIGHTNESS = 92;
+#define DEFAULT_BRIGHTNESS 75
+byte BRIGHTNESS = 75;
 #define DEFAULT_MIN_BRIGHTNESS 5
 #define DEFAULT_MAX_BRIGHTNESS 200
 int MIN_BRIGHTNESS = 5;
 int MAX_BRIGHTNESS = 200;
 
-#define BUTTON_1 7
-#define BUTTON_2 8
+#define BUTTON_1 2
+#define BUTTON_2 3
 #define BUTTON_3 9
 #define BUTTON_4 10
 #define NUM_BUTTONS 4
@@ -97,7 +97,7 @@ MenuShowType menuOptions[] = {{CLEAN_UP, "CLEAN_UP"},
 typedef enum { AUDIO3 = 0, AUDIO5 = 1 } ModeType;
 ModeType mode;
 
-LiquidCrystal LCD(12, 11, 5, 4, 3, 2);  // I will need to switch pins 3 and to to 8 and 7
+LiquidCrystal LCD(12, 11, 5, 4, 7, 8);  // I will need to switch pins 3 and to to 8 and 7
 #define LCD_BACKLIGHT_PIN A5
 unsigned long menuTimer;
 
