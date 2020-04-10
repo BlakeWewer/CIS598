@@ -43,6 +43,7 @@ CRGB leds[NUM_LEDS];
 CRGB colorsUSA[] = {CRGB::Red, CRGB::White, CRGB::Blue, CRGB::Black};
 CRGB colorsTest[] = {CRGB::Red, CRGB::Green, CRGB::Blue};
 CRGB colorsKSU[] = {0x512888, CRGB::Silver, CRGB::White};
+CHSV currentColors[3];
 unsigned int num_colors;
 
 List<CRGB> colors;
@@ -120,6 +121,7 @@ void showProgramDimmer(CRGB , unsigned int , unsigned long );
 void showProgramDimInOut(CRGB , unsigned int , unsigned long );
 void showProgramPotentiometerOne(CRGB , unsigned long );
 void showProgramMicrophoneOne(CRGB, unsigned long);
+void showProgramMicrophoneMulti(unsigned long);
 
 
 void setup() {
@@ -144,6 +146,10 @@ void setup() {
   pinMode(BUTTON_4, INPUT);
   pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
   analogWrite(LCD_BACKLIGHT_PIN, HIGH);
+
+  currentColors[0] = CHSV(0, 255, 255);
+  currentColors[1] = CHSV(96, 255, 255);
+  currentColors[2] = CHSV(160, 255, 255);
 
 //  attachInterrupt(digitalPinToInterrupt(BUTTON_1), interruptButtonMenu, RISING);
 //  attachInterrupt(digitalPinToInterrupt(BUTTON_2), interruptButtonMenu, RISING);
@@ -402,8 +408,7 @@ void onlyLEDModes()
       showProgramMicrophoneOne(CRGB::Purple, 5000);
       break;
     case MIC_MULTI:
-      //      showProgramMicrophoneOne(CRGB::Purple, 10000);    Still need to implement function
-      showProgramCleanUp(20);
+      showProgramMicrophoneMulti(5000);    // Need to test
       break;
     case CYCLE_COLORS:
       cycleCRGB();
@@ -678,6 +683,35 @@ void showProgramMicrophoneOne(CRGB crgb, unsigned long duration) {
 
   for (int i = 0; i < NUM_LEDS; ++i) {
     leds[i] = crgb;
+  }
+
+  Timer = millis();
+
+  while (millis() - Timer < duration) {
+    if (brightness < MIN_BRIGHTNESS)
+      brightness = MIN_BRIGHTNESS;
+    if (brightness > MAX_BRIGHTNESS)
+      brightness = MAX_BRIGHTNESS;
+
+    //    Serial.print("    ");
+    //    Serial.println(brightness);
+    FastLED.setBrightness(brightness);
+    FastLED.show();
+
+    volts = readMic();
+    brightness = (int)(volts * MIC_RATIO);
+  }
+}
+
+void showProgramMicrophoneMulti(unsigned long duration)
+{
+  unsigned long Timer;
+  double brightness = MIN_BRIGHTNESS;
+  double volts;
+
+  for (int i = 0; i < NUM_LEDS; ++i) {
+    int j = i % 3;
+      leds[i] = currentColors[j];
   }
 
   Timer = millis();
