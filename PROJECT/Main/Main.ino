@@ -136,7 +136,7 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
   showProgramCleanUp(1); // clean up
-  showType = CLEAN_UP;
+  showType = MIC_MULTI;
   FastLED.show();
 
   menuTimer = millis();
@@ -387,7 +387,7 @@ void onlyLEDModes()
       showProgramMultiColor(90, 90);
       break;
     case MULTI_COLOR_STROBE:
-      showProgramMultiColorStrobe(20, 100);
+      showProgramMultiColorStrobe(100, 1000);
       break;
     case SHIFT_MULTI_PIXEL:
       showProgramShiftMultiPixel(20);
