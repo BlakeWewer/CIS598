@@ -267,89 +267,12 @@ void manageButtons()
     buttons[2].Active = false;
     buttons[3].Active = false;
   }
-  
-  
-  
-  // buttons[0].Active = buttonValidPress(buttons[0]);
-  // if(!buttons[0].Active)
-  // {
-  //   buttons[1].Active = buttonValidPress(buttons[1]);
-  //   if(!buttons[1].Active)
-  //   {
-  //     buttons[2].Active = buttonValidPress(buttons[2]);
-  //     buttons[3].Active = buttonValidPress(buttons[3]);
-  //   }
-  //   else
-  //   {
-  //     buttons[2].Active = false;
-  //     buttons[3].Active = false;
-  //   }
-  // }
-  // else
-  // {
-  //   buttons[1].Active = false;
-  //   buttons[2].Active = false;
-  //   buttons[3].Active = false;
-  // }
 }
 
 int buttonPressed(Button button)
 {
   if(button.Value && !button.PrevValue) return 1;
   else return 0;
-}
-
-int buttonValidPress(Button button)
-{
-  Serial.print(button.Value);
-  Serial.print(" - ");
-  Serial.print(button.State);
-  Serial.print(" - ");
-  Serial.println(button.Active);
-  switch (button.State)
-  {
-    case Idle:
-      if (button.Value)
-      {
-        button.Timer = millis();
-        button.State = Wait;
-      }
-      break;
-
-    case Wait:
-      if (!button.Value) 
-      {
-        button.State = Idle;
-        button.Active = false;
-      }
-      else if (millis() - button.Timer >= 50)
-      {
-        button.State = High;
-        return 1;
-      }
-      break;
-
-    case High:
-      if (!button.Value) 
-      {
-        button.State = Idle;
-        button.Active = false;
-      }
-      else 
-      {
-        button.Active = false;
-        return 0;
-      }
-      break;
-  }
-  Serial.print(button.Value);
-  Serial.print(" - ");
-  Serial.print(button.State);
-  Serial.print(" - ");
-  Serial.println(button.Active);
-  Serial.println();
-  
-  return 0;
 }
 
 void incrementShowType()
