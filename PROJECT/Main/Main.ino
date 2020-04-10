@@ -226,25 +226,25 @@ void manageButtons()
 
   if(buttons[0].Value)
   {
-     if(buttonPressed(buttons[0]))  buttons[0].Active = true;
+     if(validButtonPress(buttons[0]))  buttons[0].Active = true;
      else buttons[0].Active = false;
   }
   else if (buttons[1].Value)
   {
     buttons[0].Active = false;
-    if(buttonPressed(buttons[1])) buttons[1].Active = true;
+    if(validButtonPress(buttons[1])) buttons[1].Active = true;
     else buttons[1].Active = false;
   }
   else if(buttons[2].Value)
   {
     buttons[0].Active = false;
     buttons[1].Active = false;
-    if(buttonPressed(buttons[2]))
+    if(validButtonPress(buttons[2]))
     {
       buttons[2].Active = true;
       if(buttons[3].Value)
       {
-          if(buttonPressed(buttons[3])) buttons[3].Active = true;
+          if(validButtonPress(buttons[3])) buttons[3].Active = true;
           else buttons[3].Active = false;
       }
     }
@@ -258,7 +258,7 @@ void manageButtons()
     buttons[0].Active = false;
     buttons[1].Active = false;
     buttons[2].Active = false;
-    if(buttonPressed(buttons[3])) buttons[3].Active = true;
+    if(validButtonPress(buttons[3])) buttons[3].Active = true;
     else buttons[3].Active = false;
   }
   else{
@@ -269,7 +269,7 @@ void manageButtons()
   }
 }
 
-int buttonPressed(Button button)
+int validButtonPress(Button button)
 {
   if(button.Value && !button.PrevValue) return 1;
   else return 0;
