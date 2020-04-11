@@ -382,7 +382,7 @@ void onlyLEDModes()
       showProgramCleanUp(1);
       break;
     case RANDOM:
-      showProgramRandom(1, 1);
+      showProgramRandom(20, 100);
       break;
     case SINGLE_ZIPPER:
       showProgramSingleZipper(CRGB::Purple, 1);
@@ -808,11 +808,11 @@ void showProgramMicrophoneMulti(unsigned long duration)
 void adjustBrightnessPot()
 {
   double value = (analogRead(POT_PIN) * POT_RATIO);
-  double ratio = value / 127.5;
+  double ratio = value / 100;
   MIN_BRIGHTNESS = (int)(DEFAULT_MIN_BRIGHTNESS * ratio);
   MAX_BRIGHTNESS = (int)(DEFAULT_MAX_BRIGHTNESS * ratio);
   if (MIN_BRIGHTNESS < 0) MIN_BRIGHTNESS = 0;
-  if (MAX_BRIGHTNESS > 255) MAX_BRIGHTNESS = 255;
+  if (MAX_BRIGHTNESS > 200) MAX_BRIGHTNESS = 200;
 
   //  Serial.print("MIN: ");
   //  Serial.println(MIN_BRIGHTNESS);
@@ -852,6 +852,6 @@ void cycleCRGB()
     LCD.clear();
     LCD.setCursor(0, 0);
     LCD.print(i.Name);
-    delay(500);
+    delay(750);
   }
 }
