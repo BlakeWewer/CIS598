@@ -706,9 +706,9 @@ void getAudioAndFilter()
   fix_fft(data, im, 7, 0);
 
   int j = 0;
-  for(int i = 5; i < 20; i+=5)
+  for(int i = 4; i < 16; i+=4)
   {
-    double dat = max(sqrt(data[i] * data[i] + im[i] * im[i]), max(sqrt(data[i + 1] * data[i + 1] + im[i + 1] * im[i + 1]), sqrt(data[i + 1] * data[i + 1] + im[i + 1] * im[i + 1])));
+    double dat = max(sqrt(data[i] * data[i] + im[i] * im[i]), max(sqrt(data[i + 1] * data[i + 1] + im[i + 1] * im[i + 1]), max(sqrt(data[i + 2] * data[i + 2] + im[i + 2] * im[i + 2]), sqrt(data[i + 3] * data[i + 3] + im[i + 3] * im[i + 3]))));
     freqValues[j] = dat;
     j++;
     Serial.print(dat);
