@@ -685,7 +685,7 @@ double readMic()
   //    Serial.print("    ");
   //    Serial.println(signalMax);
 
-  getAudioAndFilter();
+  //getAudioAndFilter();
 
   return volts;
 }
