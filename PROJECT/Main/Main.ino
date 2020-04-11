@@ -66,7 +66,8 @@ char im[128];
 char data[128];
 int counter = 0;
 int val;
-double freqValues[3];
+double freqValues3[3];
+double freqValues5[5];
 
 int bassValue = 0;
 int midValue = 0;
@@ -705,23 +706,49 @@ void getAudioAndFilter()
 
   fix_fft(data, im, 7, 0);
 
+  // Throw out first reading.  Average (or find median of) groups to obtain a value
   int j = 0;
-  for(int i = 4; i < 16; i+=4)
+
+  // Default 
+  for(int i = 0; i < 64; i++)
   {
-    double dat = max(sqrt(data[i] * data[i] + im[i] * im[i]), max(sqrt(data[i + 1] * data[i + 1] + im[i + 1] * im[i + 1]), max(sqrt(data[i + 2] * data[i + 2] + im[i + 2] * im[i + 2]), sqrt(data[i + 3] * data[i + 3] + im[i + 3] * im[i + 3]))));
-    freqValues[j] = dat;
-    j++;
+    double dat = sqrt(data[i] * data[i] + im[i] * im[i]);
     Serial.print(dat);
     Serial.print("  -  "); 
   }
+  
+  // Groups of 12 for 5 Colors
+//  j = 0;  
+//  for(int i = 1; i < 61; i+=12)
+//  {
+//    double peak = 0;
+//    for(int k = 0; k < 12; k++)
+//    {
+//      if(sqrt(data[i + k] * data[i + k] + im[i + k] * im[i + k]) > peak) peak = sqrt(data[i + k] * data[i + k] + im[i + k] * im[i + k]);
+//    }
+//    double dat = peak;
+//    freqValues5[j] = peak;
+//    j++;
+//    Serial.print(dat);
+//    Serial.print("  -  "); 
+//  }
+  
+  // Groups of 20 for 3 Colors
+//  j = 0;
+//  for(int i = 1; i < 61; i+=20)
+//  {
+//    double peak = 0;
+//    for(int k = 0; k < 20; k++)
+//    {
+//      if(sqrt(data[i + k] * data[i + k] + im[i + k] * im[i + k]) > peak) peak = sqrt(data[i + k] * data[i + k] + im[i + k] * im[i + k]);
+//    }
+//    double dat = peak;
+//    freqValues3[j] = peak;
+//    j++;
+//    Serial.print(dat);
+//    Serial.print("  -  "); 
+//  }
   Serial.println();
-
-//  Serial.print(bassValue);
-//  Serial.print("  -  ");
-//  Serial.print(midValue);
-//  Serial.print("  -  ");
-//  Serial.print(trebleValue);
-//  Serial.println();
 }
 
 void showProgramMicrophoneOne(CRGB crgb, unsigned long duration) {
@@ -758,7 +785,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
   double volts;
 
   for (int i = 0; i < NUM_LEDS; ++i) {
-    int j = i % 3;
+    int j = i % num_colors;
       leds[i] = currentColors[j];
   }
 
@@ -769,9 +796,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
       brightness = MIN_BRIGHTNESS;
     if (brightness > MAX_BRIGHTNESS)
       brightness = MAX_BRIGHTNESS;
-
-    //    Serial.print("    ");
-    //    Serial.println(brightness);
+      
     FastLED.setBrightness(brightness);
     FastLED.show();
 
