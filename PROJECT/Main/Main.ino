@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 #include <FastLED.h>
 #include <ListLib.h>
-#include "arduinoFFT.h"
+#include "fix_fft.h"
 
 using namespace std;
 
@@ -62,17 +62,15 @@ unsigned int sample;
 #define MIC_PIN A0
 #define MIC_RATIO 65.3846154    //Brightness = 65.3846154*Reading     //Reading = 0.01529412*Brightness
 
-arduinoFFT FFT = arduinoFFT();
-const uint16_t samples = 64;
-const double samplingFrequency = 100;
-unsigned int sampling_period_us;
-unsigned long microseconds;
-double vReal[samples];
-double vImag[samples];
-#define SCL_INDEX 0x00
-#define SCL_TIME 0x01
-#define SCL_FREQUENCY 0x02
-#define SCL_PLOT 0x03
+char im[128];
+char data[128];
+int counter = 0;
+int val;
+double freqValues[3];
+
+int bassValue = 0;
+int midValue = 0;
+int trebleValue = 0;
 
 #define POT_PIN A1
 #define POT_RATIO 0.24926686    //Brightness = 0.24926686*Reading     //Reading = 4.01176471*Brightness
@@ -164,9 +162,6 @@ void setup() {
   currentColors[0] = CHSV(0, 255, 255);
   currentColors[1] = CHSV(96, 255, 255);
   currentColors[2] = CHSV(160, 255, 255);
-
-  sampling_period_us = round(1000000 * (1.0 / samplingFrequency));
-  Serial.println("Ready");
 
 //  attachInterrupt(digitalPinToInterrupt(BUTTON_1), interruptButtonMenu, RISING);
 //  attachInterrupt(digitalPinToInterrupt(BUTTON_2), interruptButtonMenu, RISING);
@@ -422,10 +417,10 @@ void onlyLEDModes()
       showProgramPotentiometerOne(CRGB::Purple, 1);
       break;
     case MIC_ONE:
-      showProgramMicrophoneOne(CRGB::Purple, 5000);
+      showProgramMicrophoneOne(CRGB::Purple, 1000);
       break;
     case MIC_MULTI:
-      showProgramMicrophoneMulti(5000);    // Need to test
+      showProgramMicrophoneMulti(1000);   
       break;
     case CYCLE_COLORS:
       cycleCRGB();
@@ -666,7 +661,6 @@ double readMic()
   unsigned int peakToPeak = 0;
   double volts;
 
-
   startMillis = millis(); // Start of sample window
   signalMax = 0;
   signalMin = 1023;
@@ -690,7 +684,44 @@ double readMic()
   //    Serial.print("    ");
   //    Serial.println(signalMax);
 
+  getAudioAndFilter();
+
   return volts;
+}
+
+void getAudioAndFilter()
+{
+  int min = 1024;
+  int max = 0;
+
+  for(counter = 0; counter < 128; counter++)
+  {
+    val = analogRead(MIC_PIN);
+    data[counter] = val / 4 - 128;
+    im[counter] = 0;
+    if(val > max) max = val;
+    if(val < min) min = val;
+  }
+
+  fix_fft(data, im, 7, 0);
+
+  int j = 0;
+  for(int i = 5; i < 20; i+=5)
+  {
+    double dat = max(sqrt(data[i] * data[i] + im[i] * im[i]), max(sqrt(data[i + 1] * data[i + 1] + im[i + 1] * im[i + 1]), sqrt(data[i + 1] * data[i + 1] + im[i + 1] * im[i + 1])));
+    freqValues[j] = dat;
+    j++;
+    Serial.print(dat);
+    Serial.print("  -  "); 
+  }
+  Serial.println();
+
+//  Serial.print(bassValue);
+//  Serial.print("  -  ");
+//  Serial.print(midValue);
+//  Serial.print("  -  ");
+//  Serial.print(trebleValue);
+//  Serial.println();
 }
 
 void showProgramMicrophoneOne(CRGB crgb, unsigned long duration) {
