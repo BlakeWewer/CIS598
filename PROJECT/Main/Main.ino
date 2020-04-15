@@ -119,7 +119,7 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
   showProgramCleanUp(1); // clean up
-  showType = CLEAN_UP;
+  showType = MIC_MULTI_3;
   FastLED.show();
 
   menuTimer = millis();
@@ -151,7 +151,10 @@ void manageMenu()
   if (millis() - menuTimer > 10)
   {
     MenuShowType curMenuShowType = getCurrentMenuShowType();
-    LCDClearAndPrintOneLine(0, curMenuShowType.ModeName);
+//    LCDClearAndPrintOneLine(0, curMenuShowType.ModeName);
+    LCD.setCursor(0, 0);
+    LCD.print(curMenuShowType.ModeName);
+    Serial.println(curMenuShowType.ModeName);
 
     if (buttons[0].Active)
     {
@@ -175,7 +178,7 @@ void manageMenu()
       LCD.print("4 ");
     }
 
-    menuTimer += 100;
+    menuTimer += 10;
   }
 }
 
@@ -187,7 +190,7 @@ MenuShowType getCurrentMenuShowType()
     if (showType == menuOptions[i].Mode) index = i;
   }
   if (index < 0) return menuOptions[0];
-
+  Serial.println(index);
   return menuOptions[index];
 }
 
@@ -268,6 +271,8 @@ int validButtonPress(Button button)
 
 void incrementShowType()
 {
+  LCD.clear();
+  LCD.setCursor(0, 0);
   BRIGHTNESS = DEFAULT_BRIGHTNESS;
   FastLED.setBrightness(BRIGHTNESS);
   showProgramCleanUp(1);
@@ -352,7 +357,7 @@ void onlyLEDModes()
       showProgramCleanUp(1);
       break;
     case RANDOM:
-      showProgramRandom(20, 100);
+      showProgramRandom(20, 20);
       break;
     case SINGLE_ZIPPER:
       //      showProgramSingleZipper(currentColors[0], 1);
