@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 #include <FastLED.h>
 #include <ListLib.h>
-#include "fix_fft.h"
+#include "arduinoFFT.h"
 
 using namespace std;
 
@@ -44,7 +44,7 @@ CRGB leds[NUM_LEDS];
 CRGB colorsUSA[] = {CRGB::Red, CRGB::White, CRGB::Blue, CRGB::Black};
 CRGB colorsTest[] = {CRGB::Red, CRGB::Green, CRGB::Blue};
 CRGB colorsKSU[] = {0x512888, CRGB::Silver, CRGB::White};
-CHSV currentColors[3];
+CHSV currentColors[5];
 unsigned int num_colors;
 
 List<CRGB> colors;
@@ -61,6 +61,19 @@ const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS 
 unsigned int sample;
 #define MIC_PIN A0
 #define MIC_RATIO 65.3846154    //Brightness = 65.3846154*Reading     //Reading = 0.01529412*Brightness
+
+arduinoFFT FFT = arduinoFFT();
+const uint16_t SAMPLES = 128;
+const double SAMPLING_FREQUENCY = 4000;
+unsigned int sampling_period_us;
+unsigned long micro;
+double vReal[SAMPLES];
+double vImag[SAMPLES];
+
+#define SCL_INDEX 0x00
+#define SCL_TIME 0x01
+#define SCL_FREQUENCY 0x02
+#define SCL_PLOT 0x03
 
 char im[128];
 char data[128];
@@ -80,7 +93,7 @@ int trebleValue = 0;
 typedef enum {CLEAN_UP = 0, RANDOM = 1, SINGLE_ZIPPER = 2, SHIFT_SINGLE_PIXEL = 3,
               ONE_COLOR = 4, ONE_COLOR_STROBE = 5, MULTI_COLOR = 6, MULTI_COLOR_STROBE = 7,
               SHIFT_MULTI_PIXEL = 8, THREE_ARRAY = 9, DIMMER = 10, DIM_IN_OUT = 11, POT_ONE = 12,
-              MIC_ONE = 13, MIC_MULTI = 14, CYCLE_COLORS = 15
+              MIC_ONE = 13, MIC_MULTI_3 = 14, MIC_MULTI_5 = 15, CYCLE_COLORS = 16
              } ShowType;
 ShowType showType;
 
@@ -103,12 +116,10 @@ MenuShowType menuOptions[] = {{CLEAN_UP, "CLEAN_UP"},
   {DIM_IN_OUT, "DIM_IN_OUT"},
   {POT_ONE, "POT_ONE"},
   {MIC_ONE, "MIC_ONE"},
-  {MIC_MULTI, "MIC_MULTI"},
+  {MIC_MULTI_3, "MIC_MULTI_3"},
+  {MIC_MULTI_5, "MIC_MULTI_5"},
   {CYCLE_COLORS, "CYCLE_COLORS"}
 };
-
-typedef enum { AUDIO3 = 0, AUDIO5 = 1 } ModeType;
-ModeType mode;
 
 LiquidCrystal LCD(12, 11, 5, 4, 7, 8);  // I will need to switch pins 3 and to to 8 and 7
 #define LCD_BACKLIGHT_PIN A5
@@ -149,7 +160,7 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
   showProgramCleanUp(1); // clean up
-  showType = MIC_MULTI;
+  showType = MIC_MULTI_3;
   FastLED.show();
 
   menuTimer = millis();
@@ -160,12 +171,16 @@ void setup() {
   pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
   analogWrite(LCD_BACKLIGHT_PIN, HIGH);
 
-  currentColors[0] = CHSV(0, 255, 255);
-  currentColors[1] = CHSV(96, 255, 255);
-  currentColors[2] = CHSV(160, 255, 255);
+  currentColors[0] = CHSV(0, 255, 128);   // Red
+  currentColors[1] = CHSV(96, 255, 128);  // Green
+  currentColors[2] = CHSV(160, 255, 128); // Blue
+  currentColors[3] = CHSV(64, 255, 128);  // Yellow
+  currentColors[4] = CHSV(192, 255, 128); // Purple
 
-//  attachInterrupt(digitalPinToInterrupt(BUTTON_1), interruptButtonMenu, RISING);
-//  attachInterrupt(digitalPinToInterrupt(BUTTON_2), interruptButtonMenu, RISING);
+  sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
+
+  //  attachInterrupt(digitalPinToInterrupt(BUTTON_1), interruptButtonMenu, RISING);
+  //  attachInterrupt(digitalPinToInterrupt(BUTTON_2), interruptButtonMenu, RISING);
 }
 
 void loop() {
@@ -348,9 +363,14 @@ void incrementShowType()
       showType = MIC_ONE;
       break;
     case MIC_ONE:
-      showType = MIC_MULTI;
+      showType = MIC_MULTI_3;
+      num_colors = 3;
       break;
-    case MIC_MULTI:
+    case MIC_MULTI_3:
+      showType = MIC_MULTI_5;
+      num_colors = 5;
+      break;
+    case MIC_MULTI_5:
       showType = CYCLE_COLORS;
       break;
     case CYCLE_COLORS:
@@ -420,8 +440,11 @@ void onlyLEDModes()
     case MIC_ONE:
       showProgramMicrophoneOne(CRGB::Purple, 1000);
       break;
-    case MIC_MULTI:
-      showProgramMicrophoneMulti(1000);   
+    case MIC_MULTI_3:
+      showProgramMicrophoneMulti(1000);
+      break;
+    case MIC_MULTI_5:
+      showProgramMicrophoneMulti(1000);
       break;
     case CYCLE_COLORS:
       cycleCRGB();
@@ -434,52 +457,52 @@ void onlyLEDModes()
 
 void testShowPrograms()
 {
-      showProgramCleanUp(100); // clean up
-      showProgramRandom(100, 100); // show "random" program
-  
-      showProgramCleanUp(1000); // clean up
-      showProgramRandom(100, 66); // show "random" program
-  
-      showProgramCleanUp(1); // clean up
-      showProgramSingleZipper(CRGB::Purple, 10); // show "zipper" program
-  
-      showProgramCleanUp(2500); // clean up
-      showProgramShiftSinglePixel(CRGB::Blue, 100); // show "shift single pixel program" with blue pixel
-  
-      showProgramCleanUp(100);
-      showProgramOneColor(CRGB::Purple, 50);  // show "one color" program
-  
-      showProgramCleanUp(1000);
-      showProgramOneColorStrobe(CRGB::Purple, 66, 7000); // show "one color strobe" program
-  
-      showProgramCleanUp(1000);
-      showProgramMultiColorStrobe(50, 10000); // show "multi color strobe" program
-  
-      showProgramCleanUp(100);
-      showProgramMultiColor(1000, 1);   //show "multi color" program
-  
-      showProgramCleanUp(2500); // clean up
-      showProgramShiftSinglePixel(CRGB::Red, 100); // show "shift single pixel program" with red pixel
-  
-      showProgramCleanUp(2500); // clean up
-      showProgramShiftMultiPixel(100); // show "shift multi pixel" program
-  
-      showProgramCleanUp(2500); // clean up
-      showProgramShiftMultiPixel(25); // show "shift multi pixel" program
-  
-      showProgramCleanUp(100);
-      showProgramThreeArray(CRGB::Blue, CRGB::Red, CRGB::Green, 1000); //show "RGB" program
-  
-      showProgramCleanUp(100);
-      showProgramDimmer(CRGB::Purple, 1, 5);  //show "dimmer" program
-  
-      showProgramDimInOut(CRGB::Purple, 1, 5);  //show "dim in/out" program
-  
-      showProgramCleanUp(100);
-      showProgramMicrophoneOne(CRGB::Purple, 1000);  // show "microphone one color" program
-  
-      showProgramCleanUp(100);
-      showProgramPotentiometerOne(CRGB::Purple, 1000);
+  showProgramCleanUp(100); // clean up
+  showProgramRandom(100, 100); // show "random" program
+
+  showProgramCleanUp(1000); // clean up
+  showProgramRandom(100, 66); // show "random" program
+
+  showProgramCleanUp(1); // clean up
+  showProgramSingleZipper(CRGB::Purple, 10); // show "zipper" program
+
+  showProgramCleanUp(2500); // clean up
+  showProgramShiftSinglePixel(CRGB::Blue, 100); // show "shift single pixel program" with blue pixel
+
+  showProgramCleanUp(100);
+  showProgramOneColor(CRGB::Purple, 50);  // show "one color" program
+
+  showProgramCleanUp(1000);
+  showProgramOneColorStrobe(CRGB::Purple, 66, 7000); // show "one color strobe" program
+
+  showProgramCleanUp(1000);
+  showProgramMultiColorStrobe(50, 10000); // show "multi color strobe" program
+
+  showProgramCleanUp(100);
+  showProgramMultiColor(1000, 1);   //show "multi color" program
+
+  showProgramCleanUp(2500); // clean up
+  showProgramShiftSinglePixel(CRGB::Red, 100); // show "shift single pixel program" with red pixel
+
+  showProgramCleanUp(2500); // clean up
+  showProgramShiftMultiPixel(100); // show "shift multi pixel" program
+
+  showProgramCleanUp(2500); // clean up
+  showProgramShiftMultiPixel(25); // show "shift multi pixel" program
+
+  showProgramCleanUp(100);
+  showProgramThreeArray(CRGB::Blue, CRGB::Red, CRGB::Green, 1000); //show "RGB" program
+
+  showProgramCleanUp(100);
+  showProgramDimmer(CRGB::Purple, 1, 5);  //show "dimmer" program
+
+  showProgramDimInOut(CRGB::Purple, 1, 5);  //show "dim in/out" program
+
+  showProgramCleanUp(100);
+  showProgramMicrophoneOne(CRGB::Purple, 1000);  // show "microphone one color" program
+
+  showProgramCleanUp(100);
+  showProgramPotentiometerOne(CRGB::Purple, 1000);
 }
 
 
@@ -685,69 +708,63 @@ double readMic()
   //    Serial.print("    ");
   //    Serial.println(signalMax);
 
-  //getAudioAndFilter();
-
   return volts;
 }
 
 void getAudioAndFilter()
 {
-  int min = 1024;
-  int max = 0;
-
-  for(counter = 0; counter < 128; counter++)
+  micro = micros();
+  for (int i = 0; i < SAMPLES; i++)
   {
-    val = analogRead(MIC_PIN);
-    data[counter] = val / 4 - 128;
-    im[counter] = 0;
-    if(val > max) max = val;
-    if(val < min) min = val;
+    vReal[i] = analogRead(MIC_PIN);
+    vImag[i] = 0;
+    while (micros() - micro < sampling_period_us)  {}
+    micro += sampling_period_us;
   }
+  /* Print the results of the sampling according to time */
+  //  Serial.println("Data:");
+  //  PrintVector(vReal, SAMPLES, SCL_TIME);
+  FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  /* Weigh data */
+  //  Serial.println("Weighed data:");
+  //  PrintVector(vReal, SAMPLES, SCL_TIME);
+  FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD); /* Compute FFT */
+  //  Serial.println("Computed Real values:");
+  //  PrintVector(vReal, SAMPLES, SCL_INDEX);
+  //  Serial.println("Computed Imaginary values:");
+  //  PrintVector(vImag, SAMPLES, SCL_INDEX);
+  FFT.ComplexToMagnitude(vReal, vImag, SAMPLES); /* Compute magnitudes */
+  //  Serial.println("Computed magnitudes:");
+  //  PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
+  //  double x = FFT.MajorPeak(vReal, SAMPLES, SAMPLING_FREQUENCY);
+  //  Serial.println(x, 6); //Print out what frequency is the most dominant.
+  // while(1); /* Run Once */
+  // delay(2000); /* Repeat after delay */
+}
 
-  fix_fft(data, im, 7, 0);
-
-  // Throw out first reading.  Average (or find median of) groups to obtain a value
-  int j = 0;
-
-  // Default 
-  for(int i = 0; i < 64; i++)
+void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType)
+{
+  for (uint16_t i = 0; i < bufferSize; i++)
   {
-    double dat = sqrt(data[i] * data[i] + im[i] * im[i]);
-    Serial.print(dat);
-    Serial.print("  -  "); 
+    double abscissa;
+    /* Print abscissa value */
+    switch (scaleType)
+    {
+      case SCL_INDEX:
+        abscissa = (i * 1.0);
+        break;
+      case SCL_TIME:
+        abscissa = ((i * 1.0) / SAMPLING_FREQUENCY);
+        break;
+      case SCL_FREQUENCY:
+        abscissa = ((i * 1.0 * SAMPLING_FREQUENCY) / SAMPLES);
+        break;
+    }
+    Serial.print(abscissa, 6);
+    if (scaleType == SCL_FREQUENCY)
+      Serial.print("Hz");
+    Serial.print(" ");
+    Serial.println(vData[i], 4);
   }
-  
-  // Groups of 12 for 5 Colors
-//  j = 0;  
-//  for(int i = 1; i < 61; i+=12)
-//  {
-//    double peak = 0;
-//    for(int k = 0; k < 12; k++)
-//    {
-//      if(sqrt(data[i + k] * data[i + k] + im[i + k] * im[i + k]) > peak) peak = sqrt(data[i + k] * data[i + k] + im[i + k] * im[i + k]);
-//    }
-//    double dat = peak;
-//    freqValues5[j] = peak;
-//    j++;
-//    Serial.print(dat);
-//    Serial.print("  -  "); 
-//  }
-  
-  // Groups of 20 for 3 Colors
-//  j = 0;
-//  for(int i = 1; i < 61; i+=20)
-//  {
-//    double peak = 0;
-//    for(int k = 0; k < 20; k++)
-//    {
-//      if(sqrt(data[i + k] * data[i + k] + im[i + k] * im[i + k]) > peak) peak = sqrt(data[i + k] * data[i + k] + im[i + k] * im[i + k]);
-//    }
-//    double dat = peak;
-//    freqValues3[j] = peak;
-//    j++;
-//    Serial.print(dat);
-//    Serial.print("  -  "); 
-//  }
   Serial.println();
 }
 
@@ -786,7 +803,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
 
   for (int i = 0; i < NUM_LEDS; ++i) {
     int j = i % num_colors;
-      leds[i] = currentColors[j];
+    leds[i] = currentColors[j];
   }
 
   Timer = millis();
@@ -796,14 +813,41 @@ void showProgramMicrophoneMulti(unsigned long duration)
       brightness = MIN_BRIGHTNESS;
     if (brightness > MAX_BRIGHTNESS)
       brightness = MAX_BRIGHTNESS;
-      
+
     FastLED.setBrightness(brightness);
     FastLED.show();
-
-    volts = readMic();
+    getAudioAndFilter();
+//    volts = readMic();
     brightness = (int)(volts * MIC_RATIO);
   }
 }
+
+//void showProgramMicrophoneMulti(unsigned long duration)
+//{
+//  unsigned long Timer;
+//  double brightness = MIN_BRIGHTNESS;
+//  double volts;
+//
+//  for (int i = 0; i < NUM_LEDS; ++i) {
+//    int j = i % num_colors;
+//    leds[i] = currentColors[j];
+//  }
+//
+//  Timer = millis();
+//
+//  while (millis() - Timer < duration) {
+//    if (brightness < MIN_BRIGHTNESS)
+//      brightness = MIN_BRIGHTNESS;
+//    if (brightness > MAX_BRIGHTNESS)
+//      brightness = MAX_BRIGHTNESS;
+//
+//    FastLED.setBrightness(brightness);
+//    FastLED.show();
+//
+//    volts = readMic();
+//    brightness = (int)(volts * MIC_RATIO);
+//  }
+//}
 
 void adjustBrightnessPot()
 {
@@ -840,9 +884,9 @@ void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
 
 void cycleCRGB()
 {
-  for(Color i : BasicColors)
+  for (Color i : BasicColors)
   {
-    for(int j = 0; j < NUM_LEDS; j++)
+    for (int j = 0; j < NUM_LEDS; j++)
     {
       leds[j] = i.Value;
     }
