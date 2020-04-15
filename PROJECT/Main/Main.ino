@@ -12,7 +12,7 @@ using namespace std;
 #define NUM_LEDS 240
 #define DEFAULT_BRIGHTNESS 75
 byte BRIGHTNESS = 75;
-#define DEFAULT_MIN_BRIGHTNESS 5
+#define DEFAULT_MIN_BRIGHTNESS 10
 #define DEFAULT_MAX_BRIGHTNESS 200
 int8_t MIN_BRIGHTNESS = 5;
 int16_t MAX_BRIGHTNESS = 200;
@@ -142,8 +142,8 @@ void setup() {
 void loop() {
   manageButtons();
   manageMenu();
-  adjustBrightnessPot();
   onlyLEDModes();
+  adjustBrightnessPot();
 }
 
 void manageMenu()
@@ -667,8 +667,8 @@ void getAudioAndFilter()
   //  Serial.println("Computed Imaginary values:");
   //  PrintVector(vImag, SAMPLES, SCL_INDEX);
   FFT.ComplexToMagnitude(vReal, vImag, SAMPLES); /* Compute magnitudes */
-    Serial.println("Computed magnitudes:");
-    PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
+//    Serial.println("Computed magnitudes:");
+//    PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
 }
 
 void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType)
@@ -677,18 +677,18 @@ void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType)
   {
     double abscissa;
     /* Print abscissa value */
-//    switch (scaleType)
-//    {
-//      case SCL_INDEX:
-//        abscissa = (i * 1.0);
-//        break;
-//      case SCL_TIME:
-//        abscissa = ((i * 1.0) / SAMPLING_FREQUENCY);
-//        break;
-//      case SCL_FREQUENCY:
+    switch (scaleType)
+    {
+      case SCL_INDEX:
+        abscissa = (i * 1.0);
+        break;
+      case SCL_TIME:
+        abscissa = ((i * 1.0) / SAMPLING_FREQUENCY);
+        break;
+      case SCL_FREQUENCY:
         abscissa = ((i * 1.0 * SAMPLING_FREQUENCY) / SAMPLES);
-//        break;
-//    }
+        break;
+    }
     Serial.print(abscissa, 2);
     if (scaleType == SCL_FREQUENCY)
       Serial.print("Hz");
@@ -698,77 +698,102 @@ void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType)
   Serial.println();
 }
 
+
 void showProgramMicrophoneMulti(unsigned long duration)
 {
-  unsigned long Timer;
-  double brightness = MIN_BRIGHTNESS;
-//  double volts;
-
-  for (int i = 0; i < NUM_LEDS; ++i) {
-    int j = i % num_colors;
-    leds[i] = currentColors[j];
-  }
-
-  Timer = millis();
-
-  while (millis() - Timer < duration) {
-    if (brightness < MIN_BRIGHTNESS)
-      brightness = MIN_BRIGHTNESS;
-    if (brightness > MAX_BRIGHTNESS)
-      brightness = MAX_BRIGHTNESS;
-
-    FastLED.setBrightness(brightness);
-    FastLED.show();
-    getAudioAndFilter();
+  unsigned long Timer = millis();
+//  while(millis() - Timer > duration)
+//  {
+//    
+//  }
+  getAudioAndFilter();
     if(showType == MIC_MULTI_3)
     {
-      int counter = 0;
-      for(int i = 1; i < (SAMPLES >> 1); i +=(SAMPLES >> 1) / 3)
+      freqValues3[0] = (vReal[1] + vReal[2] + vReal[3]) / 75;
+      
+      double value = 0.0;
+      for(int i = 4; i < 10; i++)
       {
-        double value = 0.0;
-        for(int k = 0; k < (SAMPLES >> 1) / 3; k++)
-        {
-          value +=vReal[i + k];
-//          if(i == 1)
-//          {
-//            Serial.print(value);
-//            Serial.print(" - ");
-//          }
-        }
-        value /=((SAMPLES >> 1) / 3);
-//        Serial.print(value);
-//        Serial.print(" - ");
-        freqValues3[counter] = value;
-        counter++;
-        if(counter >= num_colors) break;
+        value +=vReal[i];
       }
-      Serial.println();
+      freqValues3[1] = value / 6;
+
+      value = 0;
+      for(int i = 10; i < (SAMPLES >> 1); i++)
+      {
+        value +=vReal[i];
+      }
+      freqValues3[2] = value / 6;
 //      currentColors[0] = currentColors[0].
       
-    }else if (showType == MIC_MULTI_5)
-    {
-      int counter = 0;
-      for(int i = 0; i < (SAMPLES >> 1); i +=(SAMPLES >> 1) / 5)
-      {
-        double value = 0.0;
-        for(int k = 0; k < (SAMPLES >> 1) / 5; k++)
-        {
-          value +=vReal[i + k];
-        }
-        value /=((SAMPLES >> 1) / 5);
-        Serial.print(value);
-        Serial.print(" - ");
-        freqValues5[counter] = value;
-        counter++;
-        if(counter >= num_colors) break;
-      }
-      Serial.println();
     }
-    
-//    volts = readMic();
-//    brightness = (int)(volts * MIC_RATIO);
-    
+    else if (showType == MIC_MULTI_5)
+    {
+      freqValues5[0] = (vReal[1] + vReal[2] + vReal[3]) / 75;
+      
+      double value = 0.0;
+      for(int i = 4; i < 7; i++)
+      {
+        value +=vReal[i];
+      }
+      freqValues5[1] = value / 3;
+
+      value = 0;
+      for(int i = 7; i < 10; i++)
+      {
+        value +=vReal[i];
+      }
+      freqValues5[2] = value / 3;
+
+      value = 0;
+      for(int i = 10; i < 12; i++)
+      {
+        value +=vReal[i];
+      }
+      freqValues5[3] = value / 3;
+
+      value = 0;
+      for(int i = 12; i < (SAMPLES >> 1); i++)
+      {
+        value +=vReal[i];
+      }
+      freqValues5[4] = value / 3;
+    }
+
+//  for(int i = 0; i < 3; i++)
+//  {
+//    Serial.print(freqValues3[i]);
+//    Serial.print(" - ");
+//  }
+//  Serial.println();
+  
+//  for(int i = 0; i < 5; i++)
+//  {
+//    Serial.print(freqValues5[i]);
+//    Serial.print(" - ");
+//  }
+//  Serial.println();
+
+  for (int i = 0; i < NUM_LEDS; i++) {
+    uint8_t val = BRIGHTNESS / 2;
+    int j = i % num_colors;
+    if(num_colors == 3)
+    {
+      val = min(min(freqValues3[j], MAX_BRIGHTNESS), val);
+      val = max(freqValues3[j], MIN_BRIGHTNESS);
+      currentColors[j].val = val;
+//      currentColors[j].val = freqValues3[j] + MIN_BRIGHTNESS;
+    }
+    else if(num_colors == 5)
+    {
+      val = min(min(freqValues5[j], MAX_BRIGHTNESS), val);
+      val = max(freqValues5[j], MIN_BRIGHTNESS);
+      currentColors[j].val = val;
+//      currentColors[j].val = freqValues5[j] + MIN_BRIGHTNESS;
+    }
+    leds[i] = currentColors[j];
   }
+    FastLED.show();
 }
 
 //void showProgramMicrophoneMulti(unsigned long duration)
@@ -807,10 +832,11 @@ void adjustBrightnessPot()
   if (MIN_BRIGHTNESS < 0) MIN_BRIGHTNESS = 0;
   if (MAX_BRIGHTNESS > 200) MAX_BRIGHTNESS = 200;
 
-  //  Serial.print("MIN: ");
-  //  Serial.println(MIN_BRIGHTNESS);
-  //  Serial.print("MAX: ");
-  //  Serial.println(MAX_BRIGHTNESS);
+//  Serial.println(value);
+//  Serial.print("MIN: ");
+//  Serial.println(MIN_BRIGHTNESS);
+//  Serial.print("MAX: ");
+//  Serial.println(MAX_BRIGHTNESS);
 }
 
 void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
