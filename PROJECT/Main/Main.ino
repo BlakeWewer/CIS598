@@ -20,9 +20,9 @@ int16_t MAX_BRIGHTNESS = 200;
 #define NUM_BUTTONS 4
 
 typedef struct {
-  byte Pin;
-  byte Value;
-  byte PrevValue;
+  int8_t Pin;
+  int8_t Value;
+  int8_t PrevValue;
   bool Active;
 } Button;
 
@@ -33,11 +33,8 @@ Button buttons[] = {{2, 0, 0, false},
                   };
 
 CRGB leds[NUM_LEDS];
-CRGB colorsUSA[] = {CRGB::Red, CRGB::White, CRGB::Blue, CRGB::Black};
-CRGB colorsTest[] = {CRGB::Red, CRGB::Green, CRGB::Blue};
-CRGB colorsKSU[] = {0x512888, CRGB::Silver, CRGB::White};
 CHSV currentColors[5];
-unsigned int num_colors;
+uint8_t num_colors;
 
 List<CRGB> colors;
 typedef struct {
@@ -46,8 +43,6 @@ typedef struct {
 } Color;
 
 Color BasicColors[] = {{CRGB::AliceBlue, "AliceBlue"}, {0x512888, "Royal Purple"}};
-//CRGB BasicColors[] = {CRGB::AliceBlue, CRGB::Amethyst, CRGB::AntiqueWhite, CRGB::Aqua, CRGB::Aquamarine, CRGB::Azure, CRGB::Beige, CRGB::Bisque, CRGB::Black, CRGB::BlanchedAlmond, CRGB::Blue, CRGB::BlueViolet, CRGB::Brown, CRGB::BurlyWood, CRGB::CadetBlue, CRGB::Chartreuse, CRGB::Chocolate, CRGB::Coral, CRGB::CornflowerBlue, CRGB::Cornsilk, CRGB::Crimson, CRGB::Cyan, CRGB::DarkBlue, CRGB::DarkCyan, CRGB::DarkGoldenrod, CRGB::DarkGray, CRGB::DarkGrey, CRGB::DarkGreen, CRGB::DarkKhaki, CRGB::DarkMagenta, CRGB::DarkOliveGreen, CRGB::DarkOrange, CRGB::DarkOrchid, CRGB::DarkRed, CRGB::DarkSalmon, CRGB::DarkSeaGreen, CRGB::DarkSlateBlue, CRGB::DarkSlateGray, CRGB::DarkSlateGrey, CRGB::DarkTurquoise, CRGB::DarkViolet, CRGB::DeepPink, CRGB::DeepSkyBlue, CRGB::DimGray, CRGB::DimGrey, CRGB::DodgerBlue, CRGB::FireBrick, CRGB::FloralWhite, CRGB::ForestGreen, CRGB::Fuchsia, CRGB::Gainsboro, CRGB::GhostWhite, CRGB::Gold, CRGB::Goldenrod, CRGB::Gray, CRGB::Grey, CRGB::Green, CRGB::GreenYellow, CRGB::Honeydew, CRGB::HotPink, CRGB::IndianRed, CRGB::Indigo, CRGB::Ivory, CRGB::Khaki, CRGB::Lavender, CRGB::LavenderBlush, CRGB::LawnGreen, CRGB::LemonChiffon, CRGB::LightBlue, CRGB::LightCoral, CRGB::LightCyan, CRGB::LightGoldenrodYellow, CRGB::LightGreen, CRGB::LightGrey, CRGB::LightPink, CRGB::LightSalmon, CRGB::LightSeaGreen, CRGB::LightSkyBlue, CRGB::LightSlateGray, CRGB::LightSlateGrey, CRGB::LightSteelBlue, CRGB::LightYellow, CRGB::Lime, CRGB::LimeGreen, CRGB::Linen, CRGB::Magenta, CRGB::Maroon, CRGB::MediumAquamarine, CRGB::MediumBlue, CRGB::MediumOrchid, CRGB::MediumPurple, CRGB::MediumSeaGreen, CRGB::MediumSlateBlue, CRGB::MediumSpringGreen, CRGB::MediumTurquoise, CRGB::MediumVioletRed, CRGB::MidnightBlue, CRGB::MintCream, CRGB::MistyRose, CRGB::Moccasin, CRGB::NavajoWhite, CRGB::Navy, CRGB::OldLace, CRGB::Olive, CRGB::OliveDrab, CRGB::Orange, CRGB::OrangeRed, CRGB::Orchid, CRGB::PaleGoldenrod, CRGB::PaleGreen, CRGB::PaleTurquoise, CRGB::PaleVioletRed, CRGB::PapayaWhip, CRGB::PeachPuff, CRGB::Peru, CRGB::Pink, CRGB::Plaid, CRGB::Plum, CRGB::PowderBlue, CRGB::Purple, CRGB::Red, CRGB::RosyBrown, CRGB::RoyalBlue, CRGB::SaddleBrown, CRGB::Salmon, CRGB::SandyBrown, CRGB::SeaGreen, CRGB::Seashell, CRGB::Sienna, CRGB::Silver, CRGB::SkyBlue, CRGB::SlateBlue, CRGB::SlateGray, CRGB::SlateGrey, CRGB::Snow, CRGB::SpringGreen, CRGB::SteelBlue, CRGB::Tan, CRGB::Teal, CRGB::Thistle, CRGB::Tomato, CRGB::Turquoise, CRGB::Violet, CRGB::Wheat, CRGB::White, CRGB::WhiteSmoke, CRGB::Yellow, CRGB::YellowGreen, CRGB::FairyLight, CRGB::FairyLightNCC};
-//String BasicColorsNames[] = {"AliceBlue", "Amethyst", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Bisque", "Black", "BlanchedAlmond", "Blue", "BlueViolet", "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue", "Cornsilk", "Crimson", "Cyan", "DarkBlue", "DarkCyan", "DarkGoldenrod", "DarkGray", "DarkGrey", "DarkGreen", "DarkKhaki", "DarkMagenta", "DarkOliveGreen", "DarkOrange", "DarkOrchid", "DarkRed", "DarkSalmon", "DarkSeaGreen", "DarkSlateBlue", "DarkSlateGray", "DarkSlateGrey", "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", "DimGray", "DimGrey", "DodgerBlue", "FireBrick", "FloralWhite", "ForestGreen", "Fuchsia", "Gainsboro", "GhostWhite", "Gold", "Goldenrod", "Gray", "Grey", "Green", "GreenYellow", "Honeydew", "HotPink", "IndianRed", "Indigo", "Ivory", "Khaki", "Lavender", "LavenderBlush", "LawnGreen", "LemonChiffon", "LightBlue", "LightCoral", "LightCyan", "LightGoldenrodYellow", "LightGreen", "LightGrey", "LightPink", "LightSalmon", "LightSeaGreen", "LightSkyBlue", "LightSlateGray", "LightSlateGrey", "LightSteelBlue", "LightYellow", "Lime", "LimeGreen", "Linen", "Magenta", "Maroon", "MediumAquamarine", "MediumBlue", "MediumOrchid", "MediumPurple", "MediumSeaGreen", "MediumSlateBlue", "MediumSpringGreen", "MediumTurquoise", "MediumVioletRed", "MidnightBlue", "MintCream", "MistyRose", "Moccasin", "NavajoWhite", "Navy", "OldLace", "Olive", "OliveDrab", "Orange", "OrangeRed", "Orchid", "PaleGoldenrod", "PaleGreen", "PaleTurquoise", "PaleVioletRed", "PapayaWhip", "PeachPuff", "Peru", "Pink", "Plaid", "Plum", "PowderBlue", "Purple", "Red", "RosyBrown", "RoyalBlue", "SaddleBrown", "Salmon", "SandyBrown", "SeaGreen", "Seashell", "Sienna", "Silver", "SkyBlue", "SlateBlue", "SlateGray", "SlateGrey", "Snow", "SpringGreen", "SteelBlue", "Tan", "Teal", "Thistle", "Tomato", "Turquoise", "Violet", "Wheat", "White", "WhiteSmoke", "Yellow", "YellowGreen", "FairyLight", "FairyLightNCC"};
 
 const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
@@ -140,9 +135,6 @@ void setup() {
   currentColors[4] = CHSV(192, 255, 128); // Purple
 
   sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
-
-  //  attachInterrupt(digitalPinToInterrupt(BUTTON_1), interruptButtonMenu, RISING);
-  //  attachInterrupt(digitalPinToInterrupt(BUTTON_2), interruptButtonMenu, RISING);
 }
 
 void loop() {
@@ -151,11 +143,6 @@ void loop() {
   adjustBrightnessPot();
   onlyLEDModes();
   //  testShowPrograms();
-}
-
-void interruptButtonMenu()
-{
-  buttons[0].Active = !buttons[0].Active;
 }
 
 void manageMenu()
@@ -367,15 +354,19 @@ void onlyLEDModes()
       showProgramRandom(20, 100);
       break;
     case SINGLE_ZIPPER:
+//      showProgramSingleZipper(currentColors[0], 1);
       showProgramSingleZipper(CRGB::Purple, 1);
       break;
     case SHIFT_SINGLE_PIXEL:
+//      showProgramShiftSinglePixel(CRGB::White, 1);
       showProgramShiftSinglePixel(CRGB::White, 1);
       break;
     case ONE_COLOR:
+//      showProgramOneColor(CRGB::Purple, 1);
       showProgramOneColor(CRGB::Purple, 1);
       break;
     case ONE_COLOR_STROBE:
+//      showProgramOneColorStrobe(CRGB::Purple, 10, 100);
       showProgramOneColorStrobe(CRGB::Purple, 10, 100);
       break;
     case MULTI_COLOR:
@@ -388,18 +379,22 @@ void onlyLEDModes()
       showProgramShiftMultiPixel(20);
       break;
     case THREE_ARRAY:
-      showProgramThreeArray(CRGB::Blue, CRGB::Red, CRGB::Green, 1);
+      showProgramThreeArray(1);
       break;
     case DIMMER:
+//      showProgramDimmer(CRGB::Purple, 1, 5);
       showProgramDimmer(CRGB::Purple, 1, 5);
       break;
     case DIM_IN_OUT:
+//      showProgramDimInOut(CRGB::Purple, 1, 5);
       showProgramDimInOut(CRGB::Purple, 1, 5);
       break;
     case POT_ONE:
+//      showProgramPotentiometerOne(CRGB::Purple, 1);
       showProgramPotentiometerOne(CRGB::Purple, 1);
       break;
     case MIC_ONE:
+//      showProgramMicrophoneOne(CRGB::Purple, 1000);
       showProgramMicrophoneOne(CRGB::Purple, 1000);
       break;
     case MIC_MULTI_3:
@@ -453,7 +448,7 @@ void testShowPrograms()
   showProgramShiftMultiPixel(25); // show "shift multi pixel" program
 
   showProgramCleanUp(100);
-  showProgramThreeArray(CRGB::Blue, CRGB::Red, CRGB::Green, 1000); //show "RGB" program
+  showProgramThreeArray(1000); //show "RGB" program
 
   showProgramCleanUp(100);
   showProgramDimmer(CRGB::Purple, 1, 5);  //show "dimmer" program
@@ -534,7 +529,7 @@ void showProgramOneColorStrobe(CRGB crgb, unsigned long intervalTime, unsigned l
 //Cycles through the list of colors
 void showProgramMultiColor(unsigned long dTime, unsigned long durationTime) {
   for (unsigned int i = 0; i < num_colors; i++) {
-    showProgramOneColor(colorsTest[i], dTime);
+    showProgramOneColor(currentColors[i], dTime);
   }
   delay(durationTime);
 }
@@ -545,7 +540,7 @@ void showProgramMultiColorStrobe(unsigned long intervalTime, unsigned long durat
   int i = 0;
   while (millis() - timer < durationTime)
   {
-    showProgramOneColor(colorsTest[i], intervalTime);
+    showProgramOneColor(currentColors[i], intervalTime);
     showProgramCleanUp(intervalTime);
     i++;
     i %= num_colors;
@@ -569,11 +564,11 @@ void showProgramShiftMultiPixel(unsigned long durationTime) {
 }
 
 
-void showProgramThreeArray(CRGB crgb1, CRGB crgb2, CRGB crgb3, unsigned long durationTime) {
+void showProgramThreeArray(unsigned long durationTime) {
   for (int i = 0; i < NUM_LEDS - 3; i += 3) {
-    leds[i] = crgb1;
-    leds[i + 1] = crgb2;
-    leds[i + 2] = crgb3;
+    leds[i] = currentColors[0];;
+    leds[i + 1] = currentColors[1];
+    leds[i + 2] = currentColors[2];
   }
   FastLED.show();
   delay(durationTime);
