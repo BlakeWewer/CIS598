@@ -45,16 +45,16 @@ typedef struct {
   String Name;
 } Color;
 
-Color BasicColors[] = {{CRGB::AliceBlue, "AliceBlue"}, {0x512888, "Royal Purple"}};
+//Color BasicColors[] = {{CRGB::AliceBlue, "AliceBlue"}, {0x512888, "Royal Purple"}};
 
 const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS = 20Hz)
 #define MIC_PIN A0
 #define MIC_RATIO 65.3846154    //Brightness = 65.3846154*Reading     //Reading = 0.01529412*Brightness
 
 arduinoFFT FFT = arduinoFFT();
-const uint16_t SAMPLES = 32;
-const double SAMPLING_FREQUENCY = 4000;
-unsigned int sampling_period_us;
+#define SAMPLES 32
+#define SAMPLING_FREQUENCY 2000
+uint16_t sampling_period_us;
 unsigned long micro;
 double vReal[SAMPLES];
 double vImag[SAMPLES];
@@ -667,29 +667,29 @@ void getAudioAndFilter()
   //  Serial.println("Computed Imaginary values:");
   //  PrintVector(vImag, SAMPLES, SCL_INDEX);
   FFT.ComplexToMagnitude(vReal, vImag, SAMPLES); /* Compute magnitudes */
-  //  Serial.println("Computed magnitudes:");
-  //  PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
+    Serial.println("Computed magnitudes:");
+    PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
 }
 
 void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType)
 {
-  for (uint16_t i = 0; i < bufferSize; i++)
+  for (uint16_t i = 1; i < bufferSize; i++)
   {
     double abscissa;
     /* Print abscissa value */
-    switch (scaleType)
-    {
-      case SCL_INDEX:
-        abscissa = (i * 1.0);
-        break;
-      case SCL_TIME:
-        abscissa = ((i * 1.0) / SAMPLING_FREQUENCY);
-        break;
-      case SCL_FREQUENCY:
+//    switch (scaleType)
+//    {
+//      case SCL_INDEX:
+//        abscissa = (i * 1.0);
+//        break;
+//      case SCL_TIME:
+//        abscissa = ((i * 1.0) / SAMPLING_FREQUENCY);
+//        break;
+//      case SCL_FREQUENCY:
         abscissa = ((i * 1.0 * SAMPLING_FREQUENCY) / SAMPLES);
-        break;
-    }
-    Serial.print(abscissa, 6);
+//        break;
+//    }
+    Serial.print(abscissa, 2);
     if (scaleType == SCL_FREQUENCY)
       Serial.print("Hz");
     Serial.print(" ");
@@ -723,19 +723,26 @@ void showProgramMicrophoneMulti(unsigned long duration)
     if(showType == MIC_MULTI_3)
     {
       int counter = 0;
-      for(int i = 0; i < (SAMPLES >> 1); i +=(SAMPLES >> 1) / 3)
+      for(int i = 1; i < (SAMPLES >> 1); i +=(SAMPLES >> 1) / 3)
       {
         double value = 0.0;
         for(int k = 0; k < (SAMPLES >> 1) / 3; k++)
         {
           value +=vReal[i + k];
+//          if(i == 1)
+//          {
+//            Serial.print(value);
+//            Serial.print(" - ");
+//          }
         }
         value /=((SAMPLES >> 1) / 3);
-        Serial.println(value);
+//        Serial.print(value);
+//        Serial.print(" - ");
         freqValues3[counter] = value;
         counter++;
         if(counter >= num_colors) break;
       }
+      Serial.println();
 //      currentColors[0] = currentColors[0].
       
     }else if (showType == MIC_MULTI_5)
@@ -749,11 +756,13 @@ void showProgramMicrophoneMulti(unsigned long duration)
           value +=vReal[i + k];
         }
         value /=((SAMPLES >> 1) / 5);
-        Serial.println(value);
+        Serial.print(value);
+        Serial.print(" - ");
         freqValues5[counter] = value;
         counter++;
         if(counter >= num_colors) break;
       }
+      Serial.println();
     }
     
 //    volts = readMic();
@@ -824,18 +833,18 @@ void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
 
 void cycleCRGB()
 {
-  for (Color i : BasicColors)
-  {
-    for (int j = 0; j < NUM_LEDS; j++)
-    {
-      leds[j] = i.Value;
-    }
-    BRIGHTNESS = DEFAULT_BRIGHTNESS;
-    FastLED.show(BRIGHTNESS);
-    FastLED.show();
-    LCD.clear();
-    LCD.setCursor(0, 0);
-    LCD.print(i.Name);
-    delay(750);
-  }
+//  for (Color i : BasicColors)
+//  {
+//    for (int j = 0; j < NUM_LEDS; j++)
+//    {
+//      leds[j] = i.Value;
+//    }
+//    BRIGHTNESS = DEFAULT_BRIGHTNESS;
+//    FastLED.show(BRIGHTNESS);
+//    FastLED.show();
+//    LCD.clear();
+//    LCD.setCursor(0, 0);
+//    LCD.print(i.Name);
+//    delay(750);
+//  }
 }
