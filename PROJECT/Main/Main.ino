@@ -53,7 +53,7 @@ const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS 
 
 arduinoFFT FFT = arduinoFFT();
 #define SAMPLES 32
-#define SAMPLING_FREQUENCY 2000
+#define SAMPLING_FREQUENCY 3000
 uint16_t sampling_period_us;
 unsigned long micro;
 double vReal[SAMPLES];
@@ -673,7 +673,7 @@ void getAudioAndFilter()
 
 void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType)
 {
-  for (uint16_t i = 1; i < bufferSize; i++)
+  for (uint16_t i = 0; i < bufferSize; i++)
   {
     double abscissa;
     /* Print abscissa value */
