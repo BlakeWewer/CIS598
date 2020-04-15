@@ -55,7 +55,7 @@ unsigned int sample;
 #define MIC_RATIO 65.3846154    //Brightness = 65.3846154*Reading     //Reading = 0.01529412*Brightness
 
 arduinoFFT FFT = arduinoFFT();
-const uint16_t SAMPLES = 128;
+const uint16_t SAMPLES = 64;
 const double SAMPLING_FREQUENCY = 4000;
 unsigned int sampling_period_us;
 unsigned long micro;
@@ -67,16 +67,8 @@ double vImag[SAMPLES];
 #define SCL_FREQUENCY 0x02
 #define SCL_PLOT 0x03
 
-char im[64];
-char data[64];
-int counter = 0;
-int val;
 double freqValues3[3];
 double freqValues5[5];
-
-int bassValue = 0;
-int midValue = 0;
-int trebleValue = 0;
 
 #define POT_PIN A1
 #define POT_RATIO 0.24926686    //Brightness = 0.24926686*Reading     //Reading = 4.01176471*Brightness
@@ -116,27 +108,6 @@ MenuShowType menuOptions[] = {{CLEAN_UP, "CLEAN_UP"},
 LiquidCrystal LCD(12, 11, 5, 4, 7, 8);  // I will need to switch pins 3 and to to 8 and 7
 #define LCD_BACKLIGHT_PIN A5
 unsigned long menuTimer;
-
-unsigned long durationTime;
-CRGB crgb;
-unsigned long intervalTime;
-unsigned int decay;
-void testShowPrograms();
-void showProgramCleanUp(unsigned long);
-void showProgramRandom(int , unsigned long );
-void showProgramSingleZipper(CRGB , unsigned long );
-void showProgramShiftSinglePixel(CRGB , unsigned long );
-void showProgramOneColor(CRGB , unsigned long );
-void showProgramOneColorStrobe(CRGB , unsigned long , unsigned long );
-void showProgramMultiColor(unsigned long , unsigned long );
-void showProgramMultiColorStrobe(unsigned long , unsigned long );
-void showProgramShiftMultiPixel(unsigned long );
-void showProgramThreeArray(CRGB , CRGB , CRGB , unsigned long );
-void showProgramDimmer(CRGB , unsigned int , unsigned long );
-void showProgramDimInOut(CRGB , unsigned int , unsigned long );
-void showProgramPotentiometerOne(CRGB , unsigned long );
-void showProgramMicrophoneOne(CRGB, unsigned long);
-void showProgramMicrophoneMulti(unsigned long);
 
 
 void setup() {
