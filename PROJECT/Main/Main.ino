@@ -17,6 +17,10 @@ byte BRIGHTNESS = 75;
 int8_t MIN_BRIGHTNESS = 5;
 int16_t MAX_BRIGHTNESS = 200;
 
+#define BUTTON_1 2
+#define BUTTON_2 3
+#define BUTTON_3 9
+#define BUTTON_4 10
 #define NUM_BUTTONS 4
 
 typedef struct {
@@ -26,17 +30,16 @@ typedef struct {
   bool Active;
 } Button;
 
-Button buttons[] = {{2, 0, 0, false},
-                    {3, 0, 0, false},
-                    {9, 0, 0, false},
-                    {10, 0, 0, false}
+Button buttons[] = {{BUTTON_1, 0, 0, false},
+                    {BUTTON_2, 0, 0, false},
+                    {BUTTON_3, 0, 0, false},
+                    {BUTTON_4, 0, 0, false}
                   };
 
 CRGB leds[NUM_LEDS];
 CHSV currentColors[5];
 uint8_t num_colors;
 
-List<CRGB> colors;
 typedef struct {
   CRGB Value;
   String Name;
@@ -45,12 +48,11 @@ typedef struct {
 Color BasicColors[] = {{CRGB::AliceBlue, "AliceBlue"}, {0x512888, "Royal Purple"}};
 
 const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS = 20Hz)
-unsigned int sample;
 #define MIC_PIN A0
 #define MIC_RATIO 65.3846154    //Brightness = 65.3846154*Reading     //Reading = 0.01529412*Brightness
 
 arduinoFFT FFT = arduinoFFT();
-const uint16_t SAMPLES = 64;
+const uint16_t SAMPLES = 32;
 const double SAMPLING_FREQUENCY = 4000;
 unsigned int sampling_period_us;
 unsigned long micro;
@@ -68,7 +70,7 @@ double freqValues5[5];
 #define POT_PIN A1
 #define POT_RATIO 0.24926686    //Brightness = 0.24926686*Reading     //Reading = 4.01176471*Brightness
 
-#define NUM_SHOWTYPES 16
+#define NUM_SHOWTYPES 17
 typedef enum {CLEAN_UP = 0, RANDOM = 1, SINGLE_ZIPPER = 2, SHIFT_SINGLE_PIXEL = 3,
               ONE_COLOR = 4, ONE_COLOR_STROBE = 5, MULTI_COLOR = 6, MULTI_COLOR_STROBE = 7,
               SHIFT_MULTI_PIXEL = 8, THREE_ARRAY = 9, DIMMER = 10, DIM_IN_OUT = 11, POT_ONE = 12,
@@ -121,10 +123,10 @@ void setup() {
   FastLED.show();
 
   menuTimer = millis();
-  pinMode(2, INPUT);
-  pinMode(3, INPUT);
-  pinMode(9, INPUT);
-  pinMode(10, INPUT);
+  pinMode(BUTTON_1, INPUT);
+  pinMode(BUTTON_2, INPUT);
+  pinMode(BUTTON_3, INPUT);
+  pinMode(BUTTON_4, INPUT);
   pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
   analogWrite(LCD_BACKLIGHT_PIN, HIGH);
 
@@ -142,7 +144,6 @@ void loop() {
   manageMenu();
   adjustBrightnessPot();
   onlyLEDModes();
-  //  testShowPrograms();
 }
 
 void manageMenu()
@@ -412,56 +413,6 @@ void onlyLEDModes()
   }
 }
 
-void testShowPrograms()
-{
-  showProgramCleanUp(100); // clean up
-  showProgramRandom(100, 100); // show "random" program
-
-  showProgramCleanUp(1000); // clean up
-  showProgramRandom(100, 66); // show "random" program
-
-  showProgramCleanUp(1); // clean up
-  showProgramSingleZipper(CRGB::Purple, 10); // show "zipper" program
-
-  showProgramCleanUp(2500); // clean up
-  showProgramShiftSinglePixel(CRGB::Blue, 100); // show "shift single pixel program" with blue pixel
-
-  showProgramCleanUp(100);
-  showProgramOneColor(CRGB::Purple, 50);  // show "one color" program
-
-  showProgramCleanUp(1000);
-  showProgramOneColorStrobe(CRGB::Purple, 66, 7000); // show "one color strobe" program
-
-  showProgramCleanUp(1000);
-  showProgramMultiColorStrobe(50, 10000); // show "multi color strobe" program
-
-  showProgramCleanUp(100);
-  showProgramMultiColor(1000, 1);   //show "multi color" program
-
-  showProgramCleanUp(2500); // clean up
-  showProgramShiftSinglePixel(CRGB::Red, 100); // show "shift single pixel program" with red pixel
-
-  showProgramCleanUp(2500); // clean up
-  showProgramShiftMultiPixel(100); // show "shift multi pixel" program
-
-  showProgramCleanUp(2500); // clean up
-  showProgramShiftMultiPixel(25); // show "shift multi pixel" program
-
-  showProgramCleanUp(100);
-  showProgramThreeArray(1000); //show "RGB" program
-
-  showProgramCleanUp(100);
-  showProgramDimmer(CRGB::Purple, 1, 5);  //show "dimmer" program
-
-  showProgramDimInOut(CRGB::Purple, 1, 5);  //show "dim in/out" program
-
-  showProgramCleanUp(100);
-  showProgramMicrophoneOne(CRGB::Purple, 1000);  // show "microphone one color" program
-
-  showProgramCleanUp(100);
-  showProgramPotentiometerOne(CRGB::Purple, 1000);
-}
-
 
 
 // switches on all LEDs. Each LED is shown in random color.
@@ -636,6 +587,7 @@ void showProgramDimInOut(CRGB crgb, unsigned int decay, unsigned long durationTi
 
 double readMic()
 {
+  unsigned int sample;
   unsigned int signalMax = 0;
   unsigned int signalMin = 1024;
   unsigned long startMillis;
@@ -643,8 +595,6 @@ double readMic()
   double volts;
 
   startMillis = millis(); // Start of sample window
-  signalMax = 0;
-  signalMin = 1023;
   while (millis() - startMillis < MIC_SAMPLE_WINDOW_DURATION)
   {
     sample = analogRead(MIC_PIN);
