@@ -119,7 +119,7 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
   showProgramCleanUp(1); // clean up
-  showType = MIC_MULTI_3;
+  showType = CLEAN_UP;
   FastLED.show();
 
   menuTimer = millis();
@@ -144,6 +144,13 @@ void loop() {
   manageMenu();
   onlyLEDModes();
   adjustMaxMinBrightness();
+
+//  for(int i = 0; i < NUM_SHOWTYPES; i++)
+//  {
+//    Serial.print(menuOptions[i].Mode);
+//    Serial.print("-");
+//    Serial.println(menuOptions[i].ModeName);
+//  }
 }
 
 void manageMenu()
@@ -164,12 +171,15 @@ void manageMenu()
       LCD.setCursor(1, 1);
       LCD.print("2 ");
     }
-    if (buttons[2].Active)
+    if(buttons[2].Active && buttons[3].Active)
+    {
+      LCD.setCursor(2, 1);
+      LCD.print("2 & 3");
+    }else if (buttons[2].Active)
     {
       LCD.setCursor(2, 1);
       LCD.print("3 ");
-    }
-    if (buttons[3].Active)
+    }else if (buttons[3].Active)
     {
       LCD.setCursor(3, 1);
       LCD.print("4 ");
