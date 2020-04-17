@@ -45,7 +45,7 @@ typedef struct {
   String Name;
 } Color;
 
-//Color BasicColors[] = {{CRGB::AliceBlue, "AliceBlue"}, {0x512888, "Royal Purple"}};
+//Color BasicColors[] = {{CRGB::Red, "Red"}, {0x512888, "Royal Purple"}, {CRGB::Green, "Green"}, {CRGB::Blue, "Blue"}, {CRGB::Yellow, "Yellow"}};
 
 const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS = 20Hz)
 #define MIC_PIN A0
