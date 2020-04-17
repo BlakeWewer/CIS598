@@ -83,23 +83,23 @@ typedef struct {
   String ModeName;
 } MenuShowType;
 
-MenuShowType menuOptions[] = {{CLEAN_UP, "CLEAN_UP"},
+MenuShowType menuOptions[] = {{CLEAN_UP, "NONE"},
   {RANDOM, "RANDOM"},
-  {SINGLE_ZIPPER, "SINGLE_ZIPPER"},
-  {SHIFT_SINGLE_PIXEL, "SHIFT_SINGLE_PIXEL"},
-  {ONE_COLOR, "ONE_COLOR"},
-  {ONE_COLOR_STROBE, "ONE_COLOR_STROBE"},
-  {MULTI_COLOR, "MULTI_COLOR"},
-  {MULTI_COLOR_STROBE, "MULTI_COLOR_STROBE"},
-  {SHIFT_MULTI_PIXEL, "SHIFT_MULTI_PIXEL"},
-  {THREE_ARRAY, "THREE_ARRAY"},
+  {SINGLE_ZIPPER, "ZIPPER"},
+  {SHIFT_SINGLE_PIXEL, "SLIDE"},
+  {ONE_COLOR, "ONE"},
+  {ONE_COLOR_STROBE, "STROBE"},
+  {MULTI_COLOR, "MULTI COLOR"},
+  {MULTI_COLOR_STROBE, "MULTI STROBE"},
+  {SHIFT_MULTI_PIXEL, "MULTI SLIDE"},
+  {THREE_ARRAY, "THREE"},
   {DIMMER, "DIMMER"},
-  {DIM_IN_OUT, "DIM_IN_OUT"},
-  {POT_ONE, "POT_ONE"},
-  {MIC_ONE, "MIC_ONE"},
-  {MIC_MULTI_3, "MIC_MULTI_3"},
-  {MIC_MULTI_5, "MIC_MULTI_5"},
-  {CYCLE_COLORS, "CYCLE_COLORS"}
+  {DIM_IN_OUT, "DIM IN OUT"},
+  {POT_ONE, "POT"},
+  {MIC_ONE, "ONE MIC"},
+  {MIC_MULTI_3, "THREE MIC"},
+  {MIC_MULTI_5, "FIVE MIC"},
+  {CYCLE_COLORS, "CYCLE"}
 };
 
 LiquidCrystal LCD(12, 11, 5, 4, 7, 8);  // I will need to switch pins 3 and to to 8 and 7
@@ -144,14 +144,6 @@ void loop() {
   manageMenu();
   onlyLEDModes();
   adjustMaxMinBrightness();
-
-  for(int i = 0; i < NUM_SHOWTYPES; i++)
-  {
-    Serial.print(i);
-    Serial.print(" - ");
-    Serial.println(menuOptions[i].ModeName);
-  }
-  Serial.println();
 }
 
 void manageMenu()
@@ -408,10 +400,10 @@ void onlyLEDModes()
       showProgramMicrophoneOne(CRGB::Purple, 1000);
       break;
     case MIC_MULTI_3:
-      showProgramMicrophoneMulti(3);
+      showProgramMicrophoneMulti(1000);
       break;
     case MIC_MULTI_5:
-      showProgramMicrophoneMulti(5);
+      showProgramMicrophoneMulti(1000);
       break;
     case CYCLE_COLORS:
       cycleCRGB();
@@ -708,95 +700,84 @@ void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType)
 }
 
 
-int showProgramMicrophoneMulti(uint8_t colors)
+void showProgramMicrophoneMulti(unsigned long duration)
 {
-  getAudioAndFilter();
-  if (showType == MIC_MULTI_3)
+  unsigned long Timer = millis();
+  while(millis() - Timer < duration)
   {
-    freqValues3[0] = (vReal[1] + vReal[2] + vReal[3]) / 75;
-
-    double value = 0.0;
-    for (int i = 4; i < 10; i++)
+    getAudioAndFilter();
+    if (showType == MIC_MULTI_3)
     {
-      value += vReal[i];
-    }
-    freqValues3[1] = value / 6;
+      freqValues3[0] = (vReal[1] + vReal[2] + vReal[3]) / 75;
 
-    value = 0;
-    for (int i = 10; i < (SAMPLES >> 1); i++)
-    {
-      value += vReal[i];
+      double value = 0.0;
+      for (int i = 4; i < 10; i++)
+      {
+        value += vReal[i];
+      }
+      freqValues3[1] = value / 6;
+
+      value = 0;
+      for (int i = 10; i < (SAMPLES >> 1); i++)
+      {
+        value += vReal[i];
+      }
+      freqValues3[2] = value / 6;
     }
-    freqValues3[2] = value / 6;
+    else if (showType == MIC_MULTI_5)
+    {
+      freqValues5[0] = (vReal[1] + vReal[2] + vReal[3]) / 75;
+
+      double value = 0.0;
+      for (int i = 4; i < 7; i++)
+      {
+        value += vReal[i];
+      }
+      freqValues5[1] = value / 3;
+
+      value = 0;
+      for (int i = 7; i < 10; i++)
+      {
+        value += vReal[i];
+      }
+      freqValues5[2] = value / 3;
+
+      value = 0;
+      for (int i = 10; i < 12; i++)
+      {
+        value += vReal[i];
+      }
+      freqValues5[3] = value / 3;
+
+      value = 0;
+      for (int i = 12; i < (SAMPLES >> 1); i++)
+      {
+        value += vReal[i];
+      }
+      freqValues5[4] = value / 3;
+    }
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+      uint8_t val = BRIGHTNESS / 2;
+      int j = i % num_colors;
+      if (num_colors == 3)
+      {
+        val = min(min(freqValues3[j], MAX_BRIGHTNESS), val);
+        val = max(freqValues3[j], MIN_BRIGHTNESS);
+        currentColors[j].val = val;
+        //      currentColors[j].val = freqValues3[j] + MIN_BRIGHTNESS;
+      }
+      else if (num_colors == 5)
+      {
+        val = min(min(freqValues5[j], MAX_BRIGHTNESS), val);
+        val = max(freqValues5[j], MIN_BRIGHTNESS);
+        currentColors[j].val = val;
+        //      currentColors[j].val = freqValues5[j] + MIN_BRIGHTNESS;
+      }
+      leds[i] = currentColors[j];
+    }
+    FastLED.show();
   }
-  else if (showType == MIC_MULTI_5)
-  {
-    freqValues5[0] = (vReal[1] + vReal[2] + vReal[3]) / 75;
-
-    double value = 0.0;
-    for (int i = 4; i < 7; i++)
-    {
-      value += vReal[i];
-    }
-    freqValues5[1] = value / 3;
-
-    value = 0;
-    for (int i = 7; i < 10; i++)
-    {
-      value += vReal[i];
-    }
-    freqValues5[2] = value / 3;
-
-    value = 0;
-    for (int i = 10; i < 12; i++)
-    {
-      value += vReal[i];
-    }
-    freqValues5[3] = value / 3;
-
-    value = 0;
-    for (int i = 12; i < (SAMPLES >> 1); i++)
-    {
-      value += vReal[i];
-    }
-    freqValues5[4] = value / 3;
-  }
-
-  //  for(int i = 0; i < 3; i++)
-  //  {
-  //    Serial.print(freqValues3[i]);
-  //    Serial.print(" - ");
-  //  }
-  //  Serial.println();
-
-  //  for(int i = 0; i < 5; i++)
-  //  {
-  //    Serial.print(freqValues5[i]);
-  //    Serial.print(" - ");
-  //  }
-  //  Serial.println();
-
-  for (int i = 0; i < NUM_LEDS; i++) {
-    uint8_t val = BRIGHTNESS / 2;
-    int j = i % colors;
-    if (colors == 3)
-    {
-      val = min(min(freqValues3[j], MAX_BRIGHTNESS), val);
-      val = max(freqValues3[j], MIN_BRIGHTNESS);
-      currentColors[j].val = val;
-      //      currentColors[j].val = freqValues3[j] + MIN_BRIGHTNESS;
-    }
-    else if (colors == 5)
-    {
-      val = min(min(freqValues5[j], MAX_BRIGHTNESS), val);
-      val = max(freqValues5[j], MIN_BRIGHTNESS);
-      currentColors[j].val = val;
-      //      currentColors[j].val = freqValues5[j] + MIN_BRIGHTNESS;
-    }
-    leds[i] = currentColors[j];
-  }
-  FastLED.show();
-  return 1;
 }
 
 //void showProgramMicrophoneMulti(unsigned long duration)
