@@ -174,7 +174,7 @@ void manageMenu()
 //    if(buttons[2].Active && buttons[3].Active)
 //    {
 //      LCD.setCursor(2, 1);
-//      LCD.print("2 & 3");
+//      LCD.print("3 & 4");
 //    }
     if (buttons[2].Active)
     {
