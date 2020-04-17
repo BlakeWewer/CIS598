@@ -130,11 +130,11 @@ void setup() {
   pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
   analogWrite(LCD_BACKLIGHT_PIN, HIGH);
 
-  currentColors[0] = CHSV(0, 255, 128);   // Red
-  currentColors[1] = CHSV(96, 255, 128);  // Green
-  currentColors[2] = CHSV(160, 255, 128); // Blue
-  currentColors[3] = CHSV(64, 255, 128);  // Yellow
-  currentColors[4] = CHSV(192, 255, 128); // Purple
+  currentColors[0] = CHSV(0, 255, 255);   // Red
+  currentColors[1] = CHSV(96, 255, 255);  // Green
+  currentColors[2] = CHSV(160, 255, 255); // Blue
+  currentColors[3] = CHSV(64, 255, 255);  // Yellow
+  currentColors[4] = CHSV(192, 255, 255); // Purple
 
   sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
 }
@@ -144,6 +144,14 @@ void loop() {
   manageMenu();
   onlyLEDModes();
   adjustMaxMinBrightness();
+
+  for(int i = 0; i < NUM_SHOWTYPES; i++)
+  {
+    Serial.print(i);
+    Serial.print(" - ");
+    Serial.println(menuOptions[i].ModeName);
+  }
+  Serial.println();
 }
 
 void manageMenu()
@@ -151,10 +159,7 @@ void manageMenu()
   if (millis() - menuTimer > 10)
   {
     MenuShowType curMenuShowType = getCurrentMenuShowType();
-//    LCDClearAndPrintOneLine(0, curMenuShowType.ModeName);
-    LCD.setCursor(0, 0);
-    LCD.print(curMenuShowType.ModeName);
-    Serial.println(curMenuShowType.ModeName);
+    LCDClearAndPrintOneLine(0, curMenuShowType.ModeName);
 
     if (buttons[0].Active)
     {
@@ -190,7 +195,6 @@ MenuShowType getCurrentMenuShowType()
     if (showType == menuOptions[i].Mode) index = i;
   }
   if (index < 0) return menuOptions[0];
-  Serial.println(index);
   return menuOptions[index];
 }
 
