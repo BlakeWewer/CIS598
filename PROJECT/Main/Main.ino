@@ -767,7 +767,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
     if (showType == MIC_MULTI_3)
     {
       double value = 0.0;
-      for(int i = 1 * MEMORY_VARIATION; i < 3 * MEMORY_VARIATION; i++)
+      for(int i = 1 * MEMORY_VARIATION; i <= 3 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
 //        Serial.print(i);
@@ -780,7 +780,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
 //      Serial.println();
 
       value = 0;
-      for (int i = 3 * MEMORY_VARIATION; i < 10 * MEMORY_VARIATION; i++)
+      for (int i = 3 * MEMORY_VARIATION + 1; i < 10 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
@@ -796,14 +796,14 @@ void showProgramMicrophoneMulti(unsigned long duration)
     else if (showType == MIC_MULTI_5)
     {
       double value = 0.0;
-      for(int i = 1 * MEMORY_VARIATION; i < 3 * MEMORY_VARIATION; i++)
+      for(int i = 1 * MEMORY_VARIATION; i <= 3 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
       freqValues5[0] = value / 12;
 
       value = 0;
-      for (int i = 3 * MEMORY_VARIATION; i < 7 * MEMORY_VARIATION; i++)
+      for (int i = 3 * MEMORY_VARIATION + 1; i < 7 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
