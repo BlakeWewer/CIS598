@@ -39,13 +39,12 @@ Button buttons[] = {{BUTTON_1, 0, 0, false},
 CRGB leds[NUM_LEDS];
 CHSV currentColors[5];
 uint8_t num_colors;
+uint8_t curIndex = 0;
 
 typedef struct {
   CRGB Value;
   String Name;
 } Color;
-
-//Color BasicColors[] = {{CRGB::Red, "Red"}, {0x512888, "Royal Purple"}, {CRGB::Green, "Green"}, {CRGB::Blue, "Blue"}, {CRGB::Yellow, "Yellow"}};
 
 const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS = 20Hz)
 #define MIC_PIN A0
@@ -70,11 +69,11 @@ double freqValues5[5];
 #define POT_PIN A1
 #define POT_RATIO 0.21875    //Brightness = 0.24926686*Reading     //Reading = 4.01176471*Brightness
 
-#define NUM_SHOWTYPES 17
+#define NUM_SHOWTYPES 16
 typedef enum {CLEAN_UP = 0, RANDOM = 1, SINGLE_ZIPPER = 2, SHIFT_SINGLE_PIXEL = 3,
               ONE_COLOR = 4, ONE_COLOR_STROBE = 5, MULTI_COLOR = 6, MULTI_COLOR_STROBE = 7,
               SHIFT_MULTI_PIXEL = 8, THREE_ARRAY = 9, DIMMER = 10, DIM_IN_OUT = 11, POT_ONE = 12,
-              MIC_ONE = 13, MIC_MULTI_3 = 14, MIC_MULTI_5 = 15, CYCLE_COLORS = 16
+              MIC_ONE = 13, MIC_MULTI_3 = 14, MIC_MULTI_5 = 15
              } ShowType;
 ShowType showType;
 
@@ -98,11 +97,10 @@ MenuShowType menuOptions[] = {{CLEAN_UP, "NONE"},
   {POT_ONE, "POT"},
   {MIC_ONE, "ONE MIC"},
   {MIC_MULTI_3, "THREE MIC"},
-  {MIC_MULTI_5, "FIVE MIC"},
-  {CYCLE_COLORS, "CYCLE"}
+  {MIC_MULTI_5, "FIVE MIC"}
 };
 
-LiquidCrystal LCD(12, 11, 5, 4, 7, 8);  // I will need to switch pins 3 and to to 8 and 7
+LiquidCrystal LCD(12, 11, 5, 4, 7, 8);  
 #define LCD_BACKLIGHT_PIN A5
 unsigned long menuTimer;
 
@@ -162,29 +160,19 @@ void manageMenu()
 
     if (buttons[0].Active)
     {
-      LCD.setCursor(0, 1);
-      LCD.print("1 ");
       incrementShowType();
     }
     if (buttons[1].Active)
     {
-      LCD.setCursor(1, 1);
-      LCD.print("2 ");
+      incrementIndex();
     }
-//    if(buttons[2].Active && buttons[3].Active)
-//    {
-//      LCD.setCursor(2, 1);
-//      LCD.print("3 & 4");
-//    }
     if (buttons[2].Active)
     {
-      LCD.setCursor(2, 1);
-      LCD.print("3 ");
+      changeColor(-32);
     }
     if (buttons[3].Active)
     {
-      LCD.setCursor(3, 1);
-      LCD.print("4 ");
+      changeColor(32);
     }
 
     menuTimer += 10;
@@ -334,15 +322,70 @@ void incrementShowType()
       num_colors = 5;
       break;
     case MIC_MULTI_5:
-      showType = CYCLE_COLORS;
-      break;
-    case CYCLE_COLORS:
-      showType = RANDOM;
+      //showType = CYCLE_COLORS;
+      showType = CLEAN_UP;
       break;
     default:
       showProgramCleanUp(100); // clean up
       break;
   }
+}
+
+void incrementIndex()
+{
+  curIndex++;
+  curIndex%=5;
+  LCD.clear();
+  LCD.setCursor(0, 0);
+  LCD.println("Current Index:");
+  LCD.print(curIndex);
+}
+
+void changeColor(int8_t change)
+{
+  uint8_t newHue = currentColors[curIndex].hue + change;
+  if(newHue > 254)  newHue = 0;
+  currentColors[curIndex].hue = newHue;
+  printHue(newHue);
+}
+
+void printHue(uint8_t hue)
+{
+  LCD.clear();
+  LCD.setCursor(0, 0);
+  switch(hue)
+  {
+    case 0:
+      LCD.println("RED");
+      break;
+    case 32:
+      LCD.println("ORANGE");
+      break;
+    case 64:
+      LCD.println("YELLOW");
+      break;
+    case 96:
+      LCD.println("GREEN");
+      break;
+    case 128:
+      LCD.println("AQUA");
+      break;
+    case 160:
+      LCD.println("BLUE");
+      break;
+    case 192:
+      LCD.println("PURPLE");
+      break;
+    case 224:
+      LCD.println("PINK");
+      break;
+    default:
+      LCD.println("CUSTOM");
+      break;
+  }
+  LCD.print(hue);
+  unsigned long Timer = millis();
+  while(millis() - Timer < 500) {}
 }
 
 
@@ -368,20 +411,20 @@ void onlyLEDModes()
       showProgramRandom(20, 20);
       break;
     case SINGLE_ZIPPER:
-      //      showProgramSingleZipper(currentColors[0], 1);
-      showProgramSingleZipper(CRGB::Purple, 1);
+      //      showProgramSingleZipper(CRGB::Purple, 1);
+      showProgramSingleZipper(currentColors[0], 1);
       break;
     case SHIFT_SINGLE_PIXEL:
       //      showProgramShiftSinglePixel(CRGB::White, 1);
-      showProgramShiftSinglePixel(CRGB::White, 1);
+      showProgramShiftSinglePixel(currentColors[0], 1);
       break;
     case ONE_COLOR:
       //      showProgramOneColor(CRGB::Purple, 1);
-      showProgramOneColor(CRGB::Purple, 1);
+      showProgramOneColor(currentColors[0], 1);
       break;
     case ONE_COLOR_STROBE:
       //      showProgramOneColorStrobe(CRGB::Purple, 10, 100);
-      showProgramOneColorStrobe(CRGB::Purple, 10, 100);
+      showProgramOneColorStrobe(currentColors[0], 10, 100);
       break;
     case MULTI_COLOR:
       showProgramMultiColor(90, 90);
@@ -397,28 +440,25 @@ void onlyLEDModes()
       break;
     case DIMMER:
       //      showProgramDimmer(CRGB::Purple, 1, 5);
-      showProgramDimmer(CRGB::Purple, 1, 5);
+      showProgramDimmer(currentColors[0], 1, 5);
       break;
     case DIM_IN_OUT:
       //      showProgramDimInOut(CRGB::Purple, 1, 5);
-      showProgramDimInOut(CRGB::Purple, 1, 5);
+      showProgramDimInOut(currentColors[0], 1, 5);
       break;
     case POT_ONE:
       //      showProgramPotentiometerOne(CRGB::Purple, 1);
-      showProgramPotentiometerOne(CRGB::Purple, 1);
+      showProgramPotentiometerOne(currentColors[0], 1);
       break;
     case MIC_ONE:
       //      showProgramMicrophoneOne(CRGB::Purple, 1000);
-      showProgramMicrophoneOne(CRGB::Purple, 1000);
+      showProgramMicrophoneOne(currentColors[0], 1000);
       break;
     case MIC_MULTI_3:
       showProgramMicrophoneMulti(1000);
       break;
     case MIC_MULTI_5:
       showProgramMicrophoneMulti(1000);
-      break;
-    case CYCLE_COLORS:
-      cycleCRGB();
       break;
     default:
       showProgramCleanUp(100); // clean up
@@ -530,7 +570,7 @@ void showProgramShiftMultiPixel(unsigned long durationTime) {
 
 void showProgramThreeArray(unsigned long durationTime) {
   for (int i = 0; i < NUM_LEDS - 3; i += 3) {
-    leds[i] = currentColors[0];;
+    leds[i] = currentColors[0];
     leds[i + 1] = currentColors[1];
     leds[i + 2] = currentColors[2];
   }
@@ -851,22 +891,4 @@ void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
     value = (int)(analogRead(POT_PIN) * POT_RATIO);
     Serial.println(value);
   }
-}
-
-void cycleCRGB()
-{
-  //  for (Color i : BasicColors)
-  //  {
-  //    for (int j = 0; j < NUM_LEDS; j++)
-  //    {
-  //      leds[j] = i.Value;
-  //    }
-  //    BRIGHTNESS = DEFAULT_BRIGHTNESS;
-  //    FastLED.show(BRIGHTNESS);
-  //    FastLED.show();
-  //    LCD.clear();
-  //    LCD.setCursor(0, 0);
-  //    LCD.print(i.Name);
-  //    delay(750);
-  //  }
 }
