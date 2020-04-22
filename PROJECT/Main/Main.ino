@@ -770,14 +770,14 @@ void showProgramMicrophoneMulti(unsigned long duration)
       for(int i = 1 * MEMORY_VARIATION; i < 3 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
-        Serial.print(i);
-        Serial.print(" - ");
-        Serial.println(value);
+//        Serial.print(i);
+//        Serial.print(" - ");
+//        Serial.println(value);
       }
       freqValues3[0] = value / 12;
-      Serial.println();
-      Serial.println(freqValues3[0]);
-      Serial.println();
+//      Serial.println();
+//      Serial.println(freqValues3[0]);
+//      Serial.println();
 
       value = 0;
       for (int i = 3 * MEMORY_VARIATION; i < 10 * MEMORY_VARIATION; i++)
