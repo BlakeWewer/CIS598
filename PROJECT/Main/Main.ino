@@ -116,7 +116,7 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
   showProgramCleanUp(1); // clean up
-  showType = MIC_MULTI_3;
+  showType = CLEAN_UP;
   FastLED.show();
 
   menuTimer = millis();
