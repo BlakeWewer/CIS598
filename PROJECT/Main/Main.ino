@@ -50,7 +50,8 @@ const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS 
 #define MIC_RATIO 65.3846154    //Brightness = 65.3846154*Reading     //Reading = 0.01529412*Brightness
 
 arduinoFFT FFT = arduinoFFT();
-#define SAMPLES 32
+#define SAMPLES 64
+#define MEMORY_VARIATION 2    // 32 SAMPLES = 1, 64 SAMPLES = 2, 128 SAMPLES = 3, ETC.
 #define SAMPLING_FREQUENCY 3000
 uint16_t sampling_period_us;
 unsigned long micro;
@@ -115,7 +116,7 @@ void setup() {
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
   showProgramCleanUp(1); // clean up
-  showType = CLEAN_UP;
+  showType = MIC_MULTI_3;
   FastLED.show();
 
   menuTimer = millis();
@@ -765,53 +766,69 @@ void showProgramMicrophoneMulti(unsigned long duration)
     getAudioAndFilter();
     if (showType == MIC_MULTI_3)
     {
-      freqValues3[0] = (vReal[1] + vReal[2] + vReal[3]) / 75;
-
       double value = 0.0;
-      for (int i = 4; i < 10; i++)
+      for(int i = 1 * MEMORY_VARIATION; i < 3 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
+        Serial.print(i);
+        Serial.print(" - ");
+        Serial.println(value);
       }
-      freqValues3[1] = value / 6;
+      freqValues3[0] = value / 12;
+      Serial.println();
+      Serial.println(freqValues3[0]);
+      Serial.println();
 
       value = 0;
-      for (int i = 10; i < (SAMPLES >> 1); i++)
+      for (int i = 3 * MEMORY_VARIATION; i < 10 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
-      freqValues3[2] = value / 6;
+      freqValues3[1] = value / 6 * MEMORY_VARIATION;
+
+      value = 0;
+      for (int i = 10 * MEMORY_VARIATION; i < (SAMPLES >> 1); i++)
+      {
+        value += vReal[i];
+      }
+      freqValues3[2] = value / 6 * MEMORY_VARIATION;
     }
     else if (showType == MIC_MULTI_5)
     {
-      freqValues5[0] = (vReal[1] + vReal[2] + vReal[3]) / 75;
-
       double value = 0.0;
-      for (int i = 4; i < 7; i++)
+      for(int i = 1 * MEMORY_VARIATION; i < 3 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
-      freqValues5[1] = value / 3;
+      freqValues5[0] = value / 12;
 
       value = 0;
-      for (int i = 7; i < 10; i++)
+      for (int i = 3 * MEMORY_VARIATION; i < 7 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
-      freqValues5[2] = value / 3;
+      freqValues5[1] = value / 3 * MEMORY_VARIATION;
 
       value = 0;
-      for (int i = 10; i < 12; i++)
+      for (int i = 7 * MEMORY_VARIATION; i < 10 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
-      freqValues5[3] = value / 3;
+      freqValues5[2] = value / 3 * MEMORY_VARIATION;
 
       value = 0;
-      for (int i = 12; i < (SAMPLES >> 1); i++)
+      for (int i = 10 * MEMORY_VARIATION; i < 12 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
-      freqValues5[4] = value / 3;
+      freqValues5[3] = value / 3 * MEMORY_VARIATION;
+
+      value = 0;
+      for (int i = 12 * MEMORY_VARIATION; i < (SAMPLES >> 1); i++)
+      {
+        value += vReal[i];
+      }
+      freqValues5[4] = value / 3 * MEMORY_VARIATION;
     }
 
     for (int i = 0; i < NUM_LEDS; i++) {
