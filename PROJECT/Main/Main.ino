@@ -5,7 +5,6 @@
 
 using namespace std;
 
-#define ONBOARD_LED_PIN 13
 #define DATA_PIN 6
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
@@ -112,7 +111,6 @@ void setup() {
   LCD.setCursor(0, 0);
   LCD.print("HELLO USER");
   delay(1000); // initial delay of a few seconds is recommended
-  pinMode(ONBOARD_LED_PIN, OUTPUT);
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip); // initializes LED strip
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
@@ -337,14 +335,19 @@ void incrementIndex()
   curIndex%=5;
   LCD.clear();
   LCD.setCursor(0, 0);
-  LCD.println("Current Index:");
+  LCD.print("Current Index:");
+  LCD.setCursor(0, 1);
   LCD.print(curIndex);
+  unsigned long Timer = millis();
+  while(millis() - Timer < 1000) {};
 }
 
 void changeColor(int8_t change)
 {
-  uint8_t newHue = currentColors[curIndex].hue + change;
-  if(newHue > 254)  newHue = 0;
+  uint8_t newHue;
+  if(currentColors[curIndex].hue + change < 0)  newHue = 224;
+  else if(currentColors[curIndex].hue + change > 254) newHue = 0;
+  else  newHue = currentColors[curIndex].hue + change;
   currentColors[curIndex].hue = newHue;
   printHue(newHue);
 }
@@ -353,39 +356,43 @@ void printHue(uint8_t hue)
 {
   LCD.clear();
   LCD.setCursor(0, 0);
+  LCD.print("CurrentIndex: ");
+  LCD.print(curIndex);
+  LCD.setCursor(0, 1);
   switch(hue)
   {
     case 0:
-      LCD.println("RED");
+      LCD.print("RED");
       break;
     case 32:
-      LCD.println("ORANGE");
+      LCD.print("ORANGE");
       break;
     case 64:
-      LCD.println("YELLOW");
+      LCD.print("YELLOW");
       break;
     case 96:
-      LCD.println("GREEN");
+      LCD.print("GREEN");
       break;
     case 128:
-      LCD.println("AQUA");
+      LCD.print("AQUA");
       break;
     case 160:
-      LCD.println("BLUE");
+      LCD.print("BLUE");
       break;
     case 192:
-      LCD.println("PURPLE");
+      LCD.print("PURPLE");
       break;
     case 224:
-      LCD.println("PINK");
+      LCD.print("PINK");
       break;
     default:
-      LCD.println("CUSTOM");
+      LCD.print("CUSTOM");
       break;
   }
+  LCD.print(" -> ");
   LCD.print(hue);
   unsigned long Timer = millis();
-  while(millis() - Timer < 500) {}
+  while(millis() - Timer < 1000) {}
 }
 
 
@@ -395,9 +402,7 @@ void showProgramCleanUp(unsigned long durationTime) {
     leds[i] = CRGB::Black;
   }
   FastLED.show();
-  digitalWrite(13, HIGH); // sets the digital pin 13 on
   delay(durationTime);            // Waits for a second
-  digitalWrite(13, LOW);  // sets the digital pin 13 off
 }
 
 void onlyLEDModes()
@@ -889,6 +894,6 @@ void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
     FastLED.setBrightness(value);
     FastLED.show();
     value = (int)(analogRead(POT_PIN) * POT_RATIO);
-    Serial.println(value);
+//    Serial.println(value);
   }
 }
