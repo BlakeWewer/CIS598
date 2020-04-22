@@ -429,13 +429,13 @@ void onlyLEDModes()
       break;
     case ONE_COLOR_STROBE:
       //      showProgramOneColorStrobe(CRGB::Purple, 10, 100);
-      showProgramOneColorStrobe(currentColors[0], 10, 100);
+      showProgramOneColorStrobe(currentColors[0], 50, 100);
       break;
     case MULTI_COLOR:
       showProgramMultiColor(90, 90);
       break;
     case MULTI_COLOR_STROBE:
-      showProgramMultiColorStrobe(100, 1000);
+      showProgramMultiColorStrobe(50, 1000);
       break;
     case SHIFT_MULTI_PIXEL:
       showProgramShiftMultiPixel(20);
