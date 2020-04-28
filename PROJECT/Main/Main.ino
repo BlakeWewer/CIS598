@@ -1,6 +1,5 @@
 #include <LiquidCrystal.h>
 #include <FastLED.h>
-#include <ListLib.h>
 #include "arduinoFFT.h"
 
 using namespace std;
@@ -111,7 +110,7 @@ void setup() {
   LCD.clear();
   LCD.setCursor(0, 0);
   LCD.print("HELLO USER");
-  delay(1000); // initial delay of a few seconds is recommended
+  delay(2000); // initial delay of a few seconds is recommended
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip); // initializes LED strip
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
