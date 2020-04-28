@@ -51,7 +51,7 @@ const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS 
 arduinoFFT FFT = arduinoFFT();
 #define SAMPLES 64
 #define MEMORY_VARIATION 2    // 32 SAMPLES = 1, 64 SAMPLES = 2, 128 SAMPLES = 3, ETC.
-#define SAMPLING_FREQUENCY 3000
+#define SAMPLING_FREQUENCY 4000
 uint16_t sampling_period_us;
 unsigned long micro;
 double vReal[SAMPLES];
@@ -110,7 +110,7 @@ void setup() {
   LCD.clear();
   LCD.setCursor(0, 0);
   LCD.print("HELLO USER");
-  delay(2000); // initial delay of a few seconds is recommended
+  delay(3000); // initial delay of a few seconds is recommended
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip); // initializes LED strip
   FastLED.setBrightness(BRIGHTNESS);// global brightness
   num_colors = 3;
@@ -158,18 +158,34 @@ void manageMenu()
 
     if (buttons[0].Active)
     {
+//      LCD.clear();
+//      LCD.setCursor(0, 1);
+//      LCD.print(1);
+//      delay(500);
       incrementShowType();
     }
     if (buttons[1].Active)
     {
+//      LCD.clear();
+//      LCD.setCursor(1, 1);
+//      LCD.print(2);
+//      delay(500);
       incrementIndex();
     }
     if (buttons[2].Active)
     {
+//      LCD.clear();
+//      LCD.setCursor(2, 1);
+//      LCD.print(3);
+//      delay(500);
       changeColor(-32);
     }
     if (buttons[3].Active)
     {
+//      LCD.clear();
+//      LCD.setCursor(3, 1);
+//      LCD.print(4);
+//      delay(500);
       changeColor(32);
     }
 
@@ -389,8 +405,8 @@ void printHue(uint8_t hue)
       LCD.print("CUSTOM");
       break;
   }
-  LCD.print(" -> ");
-  LCD.print(hue);
+//  LCD.print(" -> ");
+//  LCD.print(hue);
   unsigned long Timer = millis();
   while(millis() - Timer < 1000) {}
 }
@@ -766,7 +782,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
     if (showType == MIC_MULTI_3)
     {
       double value = 0.0;
-      for(int i = 1 * MEMORY_VARIATION; i <= 3 * MEMORY_VARIATION; i++)
+      for(int i = 1 * MEMORY_VARIATION; i <= 4 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
 //        Serial.print(i);
@@ -779,7 +795,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
 //      Serial.println();
 
       value = 0;
-      for (int i = 3 * MEMORY_VARIATION + 1; i < 10 * MEMORY_VARIATION; i++)
+      for (int i = 4 * MEMORY_VARIATION + 1; i < 10 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
@@ -795,14 +811,14 @@ void showProgramMicrophoneMulti(unsigned long duration)
     else if (showType == MIC_MULTI_5)
     {
       double value = 0.0;
-      for(int i = 1 * MEMORY_VARIATION; i <= 3 * MEMORY_VARIATION; i++)
+      for(int i = 1 * MEMORY_VARIATION; i <= 4 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
       freqValues5[0] = value / 12;
 
       value = 0;
-      for (int i = 3 * MEMORY_VARIATION + 1; i < 7 * MEMORY_VARIATION; i++)
+      for (int i = 4 * MEMORY_VARIATION + 1; i < 7 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
