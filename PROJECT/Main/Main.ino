@@ -815,7 +815,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
       {
         value += vReal[i];
       }
-      freqValues5[0] = value / 12;
+      freqValues5[0] = value / 10;
 
       value = 0;
       for (int i = 4 * MEMORY_VARIATION + 1; i < 7 * MEMORY_VARIATION; i++)
