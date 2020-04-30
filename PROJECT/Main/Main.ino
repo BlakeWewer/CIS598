@@ -731,7 +731,7 @@ void getAudioAndFilter()
   //  PrintVector(vImag, SAMPLES, SCL_INDEX);
   FFT.ComplexToMagnitude(vReal, vImag, SAMPLES); /* Compute magnitudes */
   //    Serial.println("Computed magnitudes:");
-      PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
+  //    PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
 }
 
 
