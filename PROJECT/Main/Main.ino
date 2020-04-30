@@ -49,8 +49,8 @@ const byte MIC_SAMPLE_WINDOW_DURATION = 50; // Sample window width in mS (50 mS 
 #define MIC_RATIO 65.3846154    //Brightness = 65.3846154*Reading     //Reading = 0.01529412*Brightness
 
 arduinoFFT FFT = arduinoFFT();
-#define SAMPLES 64
 #define MEMORY_VARIATION 2    // 32 SAMPLES = 1, 64 SAMPLES = 2, 128 SAMPLES = 3, ETC.
+#define SAMPLES (int)pow(2, 4 + MEMORY_VARIATION)
 #define SAMPLING_FREQUENCY 4000
 uint16_t sampling_period_us;
 unsigned long micro;
@@ -135,19 +135,14 @@ void setup() {
   sampling_period_us = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
 }
 
+
 void loop() {
   manageButtons();
   manageMenu();
   onlyLEDModes();
   adjustMaxMinBrightness();
-
-//  for(int i = 0; i < NUM_SHOWTYPES; i++)
-//  {
-//    Serial.print(menuOptions[i].Mode);
-//    Serial.print("-");
-//    Serial.println(menuOptions[i].ModeName);
-//  }
 }
+
 
 void manageMenu()
 {
@@ -193,6 +188,7 @@ void manageMenu()
   }
 }
 
+
 MenuShowType getCurrentMenuShowType()
 {
   int index = -1;
@@ -204,12 +200,14 @@ MenuShowType getCurrentMenuShowType()
   return menuOptions[index];
 }
 
+
 void LCDClearAndPrintOneLine(byte line, String message)
 {
   LCD.clear();
   LCD.setCursor(0, line);
   LCD.print(message);
 }
+
 
 void LCDClearAndPrintTwoLines(String line1, String line2)
 {
@@ -219,6 +217,7 @@ void LCDClearAndPrintTwoLines(String line1, String line2)
   LCD.setCursor(0, 1);
   LCD.print(line2);
 }
+
 
 void manageButtons()
 {
@@ -273,11 +272,13 @@ void manageButtons()
   }
 }
 
+
 int validButtonPress(Button button)
 {
   if (button.Value && !button.PrevValue) return 1;
   else return 0;
 }
+
 
 void incrementShowType()
 {
@@ -345,6 +346,7 @@ void incrementShowType()
   }
 }
 
+
 void incrementIndex()
 {
   curIndex++;
@@ -358,6 +360,7 @@ void incrementIndex()
   while(millis() - Timer < 1000) {};
 }
 
+
 void changeColor(int8_t change)
 {
   uint8_t newHue;
@@ -367,6 +370,7 @@ void changeColor(int8_t change)
   currentColors[curIndex].hue = newHue;
   printHue(newHue);
 }
+
 
 void printHue(uint8_t hue)
 {
@@ -405,8 +409,6 @@ void printHue(uint8_t hue)
       LCD.print("CUSTOM");
       break;
   }
-//  LCD.print(" -> ");
-//  LCD.print(hue);
   unsigned long Timer = millis();
   while(millis() - Timer < 1000) {}
 }
@@ -432,19 +434,15 @@ void onlyLEDModes()
       showProgramRandom(20, 20);
       break;
     case SINGLE_ZIPPER:
-      //      showProgramSingleZipper(CRGB::Purple, 1);
       showProgramSingleZipper(currentColors[0], 1);
       break;
     case SHIFT_SINGLE_PIXEL:
-      //      showProgramShiftSinglePixel(CRGB::White, 1);
       showProgramShiftSinglePixel(currentColors[0], 1);
       break;
     case ONE_COLOR:
-      //      showProgramOneColor(CRGB::Purple, 1);
       showProgramOneColor(currentColors[0], 1);
       break;
     case ONE_COLOR_STROBE:
-      //      showProgramOneColorStrobe(CRGB::Purple, 10, 100);
       showProgramOneColorStrobe(currentColors[0], 50, 100);
       break;
     case MULTI_COLOR:
@@ -460,19 +458,15 @@ void onlyLEDModes()
       showProgramThreeArray(1);
       break;
     case DIMMER:
-      //      showProgramDimmer(CRGB::Purple, 1, 5);
       showProgramDimmer(currentColors[0], 1, 5);
       break;
     case DIM_IN_OUT:
-      //      showProgramDimInOut(CRGB::Purple, 1, 5);
       showProgramDimInOut(currentColors[0], 1, 5);
       break;
     case POT_ONE:
-      //      showProgramPotentiometerOne(CRGB::Purple, 1);
       showProgramPotentiometerOne(currentColors[0], 1);
       break;
     case MIC_ONE:
-      //      showProgramMicrophoneOne(CRGB::Purple, 1000);
       showProgramMicrophoneOne(currentColors[0], 1000);
       break;
     case MIC_MULTI_3:
@@ -551,7 +545,6 @@ void showProgramOneColorStrobe(CRGB crgb, unsigned long intervalTime, unsigned l
 }
 
 
-//Cycles through the list of colors
 void showProgramMultiColor(unsigned long dTime, unsigned long durationTime) {
   for (unsigned int i = 0; i < num_colors; i++) {
     showProgramOneColor(currentColors[i], dTime);
@@ -659,6 +652,7 @@ void showProgramDimInOut(CRGB crgb, unsigned int decay, unsigned long durationTi
   }
 }
 
+
 double readMic()
 {
   unsigned int sample;
@@ -683,14 +677,10 @@ double readMic()
   }
   peakToPeak = signalMax - signalMin; // max - min = peak-peak amplitude
   volts = ((double)peakToPeak * 5.0) / 1024.0; // convert to volts
-  //    Serial.println(volts);
-  //    Serial.print("    ");
-  //    Serial.print(signalMin);
-  //    Serial.print("    ");
-  //    Serial.println(signalMax);
 
   return volts;
 }
+
 
 void showProgramMicrophoneOne(CRGB crgb, unsigned long duration) {
   unsigned long Timer;
@@ -709,8 +699,6 @@ void showProgramMicrophoneOne(CRGB crgb, unsigned long duration) {
     if (brightness > MAX_BRIGHTNESS)
       brightness = MAX_BRIGHTNESS;
 
-    //    Serial.print("    ");
-    //    Serial.println(brightness);
     FastLED.setBrightness(brightness);
     FastLED.show();
 
@@ -718,6 +706,7 @@ void showProgramMicrophoneOne(CRGB crgb, unsigned long duration) {
     brightness = (int)(volts * MIC_RATIO);
   }
 }
+
 
 void getAudioAndFilter()
 {
@@ -729,7 +718,7 @@ void getAudioAndFilter()
     while (micros() - micro < sampling_period_us)  {}
     micro += sampling_period_us;
   }
-  /* Print the results of the sampling according to time */
+
   //  Serial.println("Data:");
   //  PrintVector(vReal, SAMPLES, SCL_TIME);
   FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  /* Weigh data */
@@ -742,8 +731,9 @@ void getAudioAndFilter()
   //  PrintVector(vImag, SAMPLES, SCL_INDEX);
   FFT.ComplexToMagnitude(vReal, vImag, SAMPLES); /* Compute magnitudes */
   //    Serial.println("Computed magnitudes:");
-  //    PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
+      PrintVector(vReal, (SAMPLES >> 1), SCL_FREQUENCY);
 }
+
 
 void PrintVector(double *vData, uint16_t bufferSize, uint8_t scaleType)
 {
@@ -782,20 +772,14 @@ void showProgramMicrophoneMulti(unsigned long duration)
     if (showType == MIC_MULTI_3)
     {
       double value = 0.0;
-      for(int i = 1 * MEMORY_VARIATION; i <= 4 * MEMORY_VARIATION; i++)
+      for(int i = 1 * MEMORY_VARIATION; i <= 3 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
-//        Serial.print(i);
-//        Serial.print(" - ");
-//        Serial.println(value);
       }
       freqValues3[0] = value / 12;
-//      Serial.println();
-//      Serial.println(freqValues3[0]);
-//      Serial.println();
 
       value = 0;
-      for (int i = 4 * MEMORY_VARIATION + 1; i < 10 * MEMORY_VARIATION; i++)
+      for (int i = 3 * MEMORY_VARIATION + 1; i < 10 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
@@ -811,14 +795,14 @@ void showProgramMicrophoneMulti(unsigned long duration)
     else if (showType == MIC_MULTI_5)
     {
       double value = 0.0;
-      for(int i = 1 * MEMORY_VARIATION; i <= 4 * MEMORY_VARIATION; i++)
+      for(int i = 1 * MEMORY_VARIATION; i <= 3 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
       freqValues5[0] = value / 10;
 
       value = 0;
-      for (int i = 4 * MEMORY_VARIATION + 1; i < 7 * MEMORY_VARIATION; i++)
+      for (int i = 3 * MEMORY_VARIATION + 1; i < 7 * MEMORY_VARIATION; i++)
       {
         value += vReal[i];
       }
@@ -854,20 +838,19 @@ void showProgramMicrophoneMulti(unsigned long duration)
         val = min(min(freqValues3[j], MAX_BRIGHTNESS), val);
         val = max(freqValues3[j], MIN_BRIGHTNESS);
         currentColors[j].val = val;
-        //      currentColors[j].val = freqValues3[j] + MIN_BRIGHTNESS;
       }
       else if (num_colors == 5)
       {
         val = min(min(freqValues5[j], MAX_BRIGHTNESS), val);
         val = max(freqValues5[j], MIN_BRIGHTNESS);
         currentColors[j].val = val;
-        //      currentColors[j].val = freqValues5[j] + MIN_BRIGHTNESS;
       }
       leds[i] = currentColors[j];
     }
     FastLED.show();
   }
 }
+
 
 //void showProgramMicrophoneMulti(unsigned long duration)
 //{
@@ -896,6 +879,7 @@ void showProgramMicrophoneMulti(unsigned long duration)
 //  }
 //}
 
+
 void adjustMaxMinBrightness()
 {
   double value = (analogRead(POT_PIN) * POT_RATIO);
@@ -904,13 +888,8 @@ void adjustMaxMinBrightness()
   MAX_BRIGHTNESS = (int)(DEFAULT_MAX_BRIGHTNESS * ratio);
   if (MIN_BRIGHTNESS < 0) MIN_BRIGHTNESS = 0;
   if (MAX_BRIGHTNESS > 200) MAX_BRIGHTNESS = 200;
-
-  //  Serial.println(value);
-  //  Serial.print("MIN: ");
-  //  Serial.println(MIN_BRIGHTNESS);
-  //  Serial.print("MAX: ");
-  //  Serial.println(MAX_BRIGHTNESS);
 }
+
 
 void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
   unsigned long Timer;
@@ -926,6 +905,5 @@ void showProgramPotentiometerOne(CRGB crgb, unsigned long duration) {
     FastLED.setBrightness(value);
     FastLED.show();
     value = (int)(analogRead(POT_PIN) * POT_RATIO);
-//    Serial.println(value);
   }
 }
